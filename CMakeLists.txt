@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/bgfx.cmake)
 
-add_definitions(-DGLFW_USE_WAYLAND=ON)
-add_definitions(-DBGFX_WITH_WAYLAND=ON)
-
 add_executable(TempCpp main.cpp)
 target_link_libraries(TempCpp glfw bgfx bimg bx)
 target_include_directories(TempCpp PRIVATE

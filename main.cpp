@@ -10,11 +10,8 @@
 #include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
 #if BX_PLATFORM_LINUX
-#if GLFW_PLATFORM_WAYLAND
 #define GLFW_EXPOSE_NATIVE_WAYLAND
-#elif GLFW_PLATFORM_X11
 #define GLFW_EXPOSE_NATIVE_X11
-#endif
 #elif BX_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif BX_PLATFORM_OSX
@@ -62,13 +59,16 @@ int main()
 	// Initialize bgfx using the native window handle and window resolution.
 	bgfx::Init init;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if GLFW_PLATFORM_WAYLAND
-	init.platformData.ndt = glfwGetWaylandDisplay();
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetWaylandWindow(window);
-#elif GLFW_PLATFORM_X11
-	init.platformData.ndt = glfwGetX11Display();
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
-#endif
+	if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
+	{
+		init.platformData.ndt = glfwGetWaylandDisplay();
+		init.platformData.nwh = (void*)(uintptr_t)glfwGetWaylandWindow(window);
+	}
+	else if (glfwGetPlatform() == GLFW_PLATFORM_X11)
+	{
+		init.platformData.ndt = glfwGetX11Display();
+		init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
+	}
 #elif BX_PLATFORM_OSX
 	init.platformData.nwh = glfwGetCocoaWindow(window);
 #elif BX_PLATFORM_WINDOWS
@@ -79,11 +79,14 @@ int main()
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
-#if GLFW_PLATFORM_WAYLAND
-	init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
-#elif GLFW_PLATFORM_X11
-	init.platformData.type = bgfx::NativeWindowHandleType::X11;
-#endif
+	if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
+	{
+		init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
+	}
+	else
+	{
+		init.platformData.type = bgfx::NativeWindowHandleType::Default;
+	}
 	if (!bgfx::init(init))
 		return 1;
 	// Set view 0 to the same dimensions as the window and to clear the color buffer.
