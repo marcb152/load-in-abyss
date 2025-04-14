@@ -36,3 +36,11 @@ C++ 23
 - [@EGIDE]
 - [@Boo!!]
 - [@LeGauth44](https://github.com/LeGauth44)
+
+## Inspiration & references
+
+Huge thanks to these amazing people & projects:
+- [Igneous is an open source game engine written in C++](https://github.com/MissingBitStudios/igneous)
+- [CatDogEngine: A cross-platform game engine/editor written in modern C++ (WIP)](https://github.com/meta4d-me/CatDogEngine)
+- [Minecraft, but it's built on top of a deferred renderer](https://github.com/jdah/minecraft-again)
+- [hw3d: C++ 3D graphics engine under Direct3D 11. Developed in a Planet Chili video tutorial series that can be found on YouTube. https://youtu.be/_4FArgOX1I4](https://github.com/planetchili/hw3d)
