@@ -6,7 +6,7 @@ $output v_color0
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#include "common.sh"
+#include "../common.sh"
 
 void main()
 {
