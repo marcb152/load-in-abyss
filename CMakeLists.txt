@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/bgfx.cmake)
+add_subdirectory(libs/assimp)
 
 # Get all shaders in the shaders directory for each child directory
 FILE(GLOB children RELATIVE ${CMAKE_SOURCE_DIR}/res/shaders res/shaders/*)
@@ -37,10 +38,11 @@ ENDFOREACH()
 file(GLOB SOURCES src/*.cpp)
 add_executable(TempCpp ${SOURCES} ${SHADERS_FILES})
 
-target_link_libraries(TempCpp glfw bgfx bimg bx)
+target_link_libraries(TempCpp glfw bgfx bimg bx assimp)
 target_include_directories(TempCpp PRIVATE
         "${PROJECT_BINARY_DIR}"
         "${PROJECT_SOURCE_DIR}/bgfx.cmake"
         "${PROJECT_SOURCE_DIR}/glfw"
+        "${PROJECT_SOURCE_DIR}/assimp"
         "${CMAKE_BINARY_DIR}/shaders"
 )

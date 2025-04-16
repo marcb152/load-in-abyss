@@ -10,6 +10,14 @@ cd load-in-abyss
 git submodule update --init --recursive
 ```
 
+#### Building assimp
+
+```bash
+cd libs/assimp
+cmake CMakeLists.txt -DASSIMP_NO_EXPORT=ON
+cmake --build .
+```
+
 > ![NOTE]
 > The first build might take a while (5 to 10 minutes), but subsequent builds will be faster.
 
