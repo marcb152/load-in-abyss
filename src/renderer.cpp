@@ -3,6 +3,7 @@
 //
 
 #include "renderer.hpp"
+#include "box.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -10,62 +11,16 @@
 #include "bgfx/platform.h"
 #include "bx/readerwriter.h"
 #include "bx/timer.h"
+#include <vector>
+#include <memory>
 
 namespace Abyss::renderer
 {
-    struct PosColorVertex
-    {
-        float m_x;
-        float m_y;
-        float m_z;
-        uint32_t m_abgr;
-
-        static void init()
-        {
-            ms_layout
-                .begin()
-                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
-                .end();
-        };
-
-        static bgfx::VertexLayout ms_layout;
-    };
-
-    bgfx::VertexLayout PosColorVertex::ms_layout;
-
-    static PosColorVertex s_cubeVertices[] =
-    {
-        {-1.0f,  1.0f,  1.0f, 0xff000000 },
-        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
-        {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
-        {-1.0f,  1.0f, -1.0f, 0xffff0000 },
-        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
-        {-1.0f, -1.0f, -1.0f, 0xffffff00 },
-        { 1.0f, -1.0f, -1.0f, 0xffffffff },
-    };
-
-    static const uint16_t s_cubeTriList[] =
-    {
-        0, 1, 2, // 0
-        1, 3, 2,
-        4, 6, 5, // 2
-        5, 6, 7,
-        0, 2, 4, // 4
-        4, 2, 6,
-        1, 5, 3, // 6
-        5, 7, 3,
-        0, 4, 1, // 8
-        4, 5, 1,
-        2, 3, 6, // 10
-        6, 3, 7,
-    };
-
-    bgfx::VertexBufferHandle m_vbh;
-    bgfx::IndexBufferHandle m_ibh;
     bgfx::ProgramHandle m_program;
     int64_t m_timeOffset;
+
+    // Scene management
+    std::vector<std::shared_ptr<BoxClass>> m_boxes;
 
     static bx::FileReaderI* s_fileReader = nullptr;
 
@@ -84,23 +39,29 @@ namespace Abyss::renderer
         bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH);
         // bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
-        // Create vertex stream declaration.
-        PosColorVertex::init();
-        // Create static vertex buffer.
-        m_vbh = bgfx::createVertexBuffer(
-                // Static data can be passed with bgfx::makeRef
-                bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
-
-        // Create static index buffer for triangle list rendering.
-        m_ibh = bgfx::createIndexBuffer(
-                // Static data can be passed with bgfx::makeRef
-                bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
-
+        // Initialize shared box resources
+        BoxClass::initShared();
+        
+        // For backward compatibility
+        Box::init();
+        
         // Create program from shaders.
         // load all programs in shaders directory
         bgfx::ShaderHandle vsh = loadShader("vs_cubes.sc.bin");
         bgfx::ShaderHandle fsh = loadShader("fs_cubes.sc.bin");
         m_program = bgfx::createProgram(vsh, fsh, true);
+        
+        // Create 11x11 boxes
+        for (uint32_t yy = 0; yy < 11; ++yy)
+        {
+            for (uint32_t xx = 0; xx < 11; ++xx)
+            {
+                auto box = std::make_shared<BoxClass>();
+                box->init();
+                box->setPosition(-15.0f + float(xx) * 3.0f, -15.0f + float(yy) * 3.0f, 0.0f);
+                m_boxes.push_back(box);
+            }
+        }
 
         m_timeOffset = bx::getHPCounter();
         return 0;
@@ -144,29 +105,19 @@ namespace Abyss::renderer
             | UINT64_C(0) // 0 (default) for TriangleList
             ;
 
-        // Submit 11x11 cubes.
+        // Update and render all boxes
+        int index = 0;
         for (uint32_t yy = 0; yy < 11; ++yy)
         {
             for (uint32_t xx = 0; xx < 11; ++xx)
             {
-                float mtx[16];
-                bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
-                mtx[12] = -15.0f + float(xx) * 3.0f;
-                mtx[13] = -15.0f + float(yy) * 3.0f;
-                mtx[14] = 0.0f;
-
-                // Set model matrix for rendering.
-                bgfx::setTransform(mtx);
-
-                // Set vertex and index buffer.
-                bgfx::setVertexBuffer(0, m_vbh);
-                bgfx::setIndexBuffer(m_ibh);
-
-                // Set render states.
-                bgfx::setState(state);
-
-                // Submit primitive for rendering to view 0.
-                bgfx::submit(0, m_program);
+                auto& box = m_boxes[index++];
+                
+                // Update rotation based on time
+                box->setRotation(time + xx * 0.21f, time + yy * 0.37f);
+                
+                // Render the box
+                box->render(m_program);
             }
         }
 
@@ -200,6 +151,16 @@ namespace Abyss::renderer
 
     void reset()
     {
+        // Clear all boxes
+        m_boxes.clear();
+        
+        // Reset shared resources
+        BoxClass::resetShared();
+        
+        // For backward compatibility
+        Box::reset();
+        
+        bgfx::destroy(m_program);
         bgfx::shutdown();
     }
 

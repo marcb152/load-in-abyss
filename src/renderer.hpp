@@ -5,6 +5,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include "bgfx/bgfx.h"
+#include "box.hpp"
 
 /// \brief The renderer singleton.
 /// \details This singleton is used to handle BGFX rendering, and the rendering loop.
