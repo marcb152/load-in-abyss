@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(TempCpp)
+project(LoadInAbyss)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,11 +35,28 @@ FOREACH(child ${children})
     ENDIF()
 ENDFOREACH()
 
-file(GLOB SOURCES src/*.cpp)
-add_executable(TempCpp ${SOURCES} ${SHADERS_FILES})
+# Copy models to output dir
+file(GLOB_RECURSE models LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR}/res/models res/models/*)
+foreach(model ${models})
+    message("Model found: models/${model}")
+    file(COPY ${CMAKE_SOURCE_DIR}/res/models/${model} DESTINATION ${CMAKE_BINARY_DIR}/models)
+endforeach()
 
-target_link_libraries(TempCpp glfw bgfx bimg bx assimp)
-target_include_directories(TempCpp PRIVATE
+file(GLOB SOURCES src/*.cpp)
+add_executable(LoadInAbyss ${SOURCES} ${SHADERS_FILES})
+
+# ZLib is required for assimp
+find_package(ZLIB REQUIRED)
+
+target_link_libraries(LoadInAbyss PRIVATE
+        glfw
+        bgfx
+        bimg
+        bx
+        assimp
+        ${ZLIB_LIBRARIES}
+        )
+target_include_directories(LoadInAbyss PRIVATE
         "${PROJECT_BINARY_DIR}"
         "${PROJECT_SOURCE_DIR}/bgfx.cmake"
         "${PROJECT_SOURCE_DIR}/glfw"
