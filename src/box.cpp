@@ -58,64 +58,39 @@ namespace Abyss
     };
 
     // Static members of Box class
-    bgfx::VertexBufferHandle BoxClass::ms_vbh = BGFX_INVALID_HANDLE;
-    bgfx::IndexBufferHandle BoxClass::ms_ibh = BGFX_INVALID_HANDLE;
-    bool BoxClass::ms_initialized = false;
+    bgfx::VertexBufferHandle Box::ms_vbh = BGFX_INVALID_HANDLE;
+    bgfx::IndexBufferHandle Box::ms_ibh = BGFX_INVALID_HANDLE;
+    bool Box::ms_initialized = false;
 
-    BoxClass::BoxClass()
+    Box::Box()
     {
         // Ensure shared resources are initialized
-        if (!ms_initialized) {
+        if (!ms_initialized)
+        {
             initShared();
         }
     }
 
-    BoxClass::~BoxClass()
+    void Box::init()
     {
-        // Individual box doesn't need to clean up shared resources
+        // Initialize with identity matrix
+        bx::mtxIdentity(m_matrix);
+    }
+    
+    void Box::setMatrix(const float* matrix)
+    {
+        bx::memCopy(m_matrix, matrix, sizeof(float) * 16);
+    }
+    
+    const float* Box::getMatrix() const
+    {
+        return m_matrix;
     }
 
-    void BoxClass::init()
+    void Box::render(bgfx::ProgramHandle program)
     {
-        // Initialize position and rotation
-        m_position[0] = 0.0f;
-        m_position[1] = 0.0f;
-        m_position[2] = 0.0f;
-        
-        m_rotation[0] = 0.0f;
-        m_rotation[1] = 0.0f;
-    }
-
-    void BoxClass::setPosition(float x, float y, float z)
-    {
-        m_position[0] = x;
-        m_position[1] = y;
-        m_position[2] = z;
-    }
-
-    void BoxClass::setRotation(float x, float y)
-    {
-        m_rotation[0] = x;
-        m_rotation[1] = y;
-    }
-
-    void BoxClass::getTransform(float* outMatrix) const
-    {
-        // Create rotation matrix
-        bx::mtxRotateXY(outMatrix, m_rotation[0], m_rotation[1]);
-        
-        // Set translation part of the matrix
-        outMatrix[12] = m_position[0];
-        outMatrix[13] = m_position[1];
-        outMatrix[14] = m_position[2];
-    }
-
-    void BoxClass::render(bgfx::ProgramHandle program)
-    {
-        // Calculate and set transform
-        float mtx[16];
-        getTransform(mtx);
-        bgfx::setTransform(mtx);
+        // Set transform directly from the matrix
+        bgfx::setTransform(m_matrix);
 
         // Set vertex and index buffer
         bgfx::setVertexBuffer(0, ms_vbh);
@@ -138,14 +113,15 @@ namespace Abyss
         bgfx::submit(0, program);
     }
 
-    void BoxClass::reset()
+    void Box::reset()
     {
         // Individual box reset (not touching shared resources)
     }
 
-    void BoxClass::initShared()
+    void Box::initShared()
     {
-        if (!ms_initialized) {
+        if (!ms_initialized)
+        {
             // Create vertex stream declaration
             PosColorVertex::init();
             
@@ -162,50 +138,13 @@ namespace Abyss
         }
     }
 
-    void BoxClass::resetShared()
+    void Box::resetShared()
     {
-        if (ms_initialized) {
+        if (ms_initialized)
+        {
             bgfx::destroy(ms_vbh);
             bgfx::destroy(ms_ibh);
             ms_initialized = false;
-        }
-    }
-    
-    // Legacy Box namespace for backward compatibility
-    namespace Box
-    {
-        static bgfx::VertexBufferHandle m_vbh;
-        static bgfx::IndexBufferHandle m_ibh;
-        
-        void init()
-        {
-            // Create vertex stream declaration
-            PosColorVertex::init();
-            
-            // Create static vertex buffer
-            m_vbh = bgfx::createVertexBuffer(
-                    bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), 
-                    PosColorVertex::ms_layout);
-
-            // Create static index buffer
-            m_ibh = bgfx::createIndexBuffer(
-                    bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
-        }
-
-        bgfx::VertexBufferHandle getVertexBuffer()
-        {
-            return m_vbh;
-        }
-
-        bgfx::IndexBufferHandle getIndexBuffer()
-        {
-            return m_ibh;
-        }
-
-        void reset()
-        {
-            bgfx::destroy(m_vbh);
-            bgfx::destroy(m_ibh);
         }
     }
 } // Abyss

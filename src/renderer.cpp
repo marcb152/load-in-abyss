@@ -28,7 +28,7 @@ namespace Abyss::renderer
     int64_t m_timeOffset;
 
     // Scene management
-    std::vector<std::shared_ptr<BoxClass>> m_boxes;
+    std::vector<std::shared_ptr<Box>> m_boxes;
 
     static bx::FileReaderI* s_fileReader = nullptr;
 
@@ -52,10 +52,7 @@ namespace Abyss::renderer
         // bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
         // Initialize shared box resources
-        BoxClass::initShared();
-        
-        // For backward compatibility
-        Box::init();
+        Box::initShared();
         
         // Create program from shaders.
         // load all programs in shaders directory
@@ -116,9 +113,18 @@ namespace Abyss::renderer
         {
             for (uint32_t xx = 0; xx < 11; ++xx)
             {
-                auto box = std::make_shared<BoxClass>();
+                auto box = std::make_shared<Box>();
                 box->init();
-                box->setPosition(-15.0f + float(xx) * 3.0f, -15.0f + float(yy) * 3.0f, 0.0f);
+                
+                // Create a translation matrix
+                float mtx[16];
+                // Set translation matrix
+                bx::mtxTranslate(mtx,
+                    -15.0f + static_cast<float>(xx) * 3.0f,
+                    -15.0f + static_cast<float>(yy) * 3.0f,
+                    0.0f);
+                box->setMatrix(mtx);
+                
                 m_boxes.push_back(box);
             }
         }
@@ -160,10 +166,29 @@ namespace Abyss::renderer
             for (uint32_t xx = 0; xx < 11; ++xx)
             {
                 auto& box = m_boxes[index++];
-                
-                // Update rotation based on time
-                box->setRotation(time + xx * 0.21f, time + yy * 0.37f);
-                
+
+                // Create rotation and translation matrices
+                float mtxRot[16];
+                float mtxTrans[16];
+                float mtx[16];
+
+                // Set rotation matrix based on time
+                bx::mtxRotateXY(mtxRot,
+                    time + static_cast<float>(xx) * 0.21f,
+                    time + static_cast<float>(yy) * 0.37f);
+
+                // Set translation matrix
+                bx::mtxTranslate(mtxTrans,
+                    -15.0f + static_cast<float>(xx) * 3.0f,
+                    -15.0f + static_cast<float>(yy) * 3.0f,
+                    0.0f);
+
+                // Combine rotation and translation
+                bx::mtxMul(mtx, mtxRot, mtxTrans);
+
+                // Update box matrix
+                box->setMatrix(mtx);
+
                 // Render the box
                 box->render(m_program);
             }
@@ -243,11 +268,8 @@ namespace Abyss::renderer
         m_boxes.clear();
         
         // Reset shared resources
-        BoxClass::resetShared();
-        
-        // For backward compatibility
-        Box::reset();
-        
+        Box::resetShared();
+
         bgfx::destroy(m_program);
         bgfx::shutdown();
     }

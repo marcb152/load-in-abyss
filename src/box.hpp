@@ -6,27 +6,35 @@
 #define BOX_HPP
 
 #include "bgfx/bgfx.h"
-#include <memory>
+
+#include "model.hpp"
 
 namespace Abyss
 {
-    class BoxClass
+    class Box
     {
     public:
-        BoxClass();
-        ~BoxClass();
-        
-        // Initialize this box
+        /// Constructor
+        Box();
+        /// Destructor
+        ~Box() = default;
+        /// Copy constructor
+        Box(const Box &other) = delete;
+        /// Copy assignment operator
+        Box &operator=(const Box &other) = delete;
+        /// Move constructor
+        Box(Box &&other) = default;
+        /// Move assignment operator
+        Box &operator=(Box &&other) = default;
+
+        // Initialize this box with identity matrix
         void init();
         
-        // Set position of the box
-        void setPosition(float x, float y, float z);
+        // Set the transform matrix directly
+        void setMatrix(const float* matrix);
         
-        // Set rotation of the box (in radians)
-        void setRotation(float x, float y);
-        
-        // Get the current transform matrix
-        void getTransform(float* outMatrix) const;
+        // Get the transform matrix directly
+        const float* getMatrix() const;
         
         // Render this box with the given program 
         void render(bgfx::ProgramHandle program);
@@ -41,25 +49,18 @@ namespace Abyss
         static void resetShared();
         
     private:
-        float m_position[3] = {0.0f, 0.0f, 0.0f};
-        float m_rotation[2] = {0.0f, 0.0f};
-        
+        float m_matrix[16] = {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        }; // Identity matrix by default
+
         // Shared resources for all boxes
         static bgfx::VertexBufferHandle ms_vbh;
         static bgfx::IndexBufferHandle ms_ibh;
         static bool ms_initialized;
-        
-        // Vertex structure and layout (defined in .cpp)
     };
-    
-    // For backward compatibility - will be deprecated in future
-    namespace Box
-    {
-        void init();
-        bgfx::VertexBufferHandle getVertexBuffer();
-        bgfx::IndexBufferHandle getIndexBuffer();
-        void reset();
-    }
     
 } // Abyss
 
