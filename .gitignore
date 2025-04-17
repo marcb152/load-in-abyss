@@ -6,6 +6,8 @@
 *.lo
 *.o
 *.obj
+# Don't ignore the 3D files in the res/models directory
+!/res/models/*.obj
 
 # Precompiled Headers
 *.gch
