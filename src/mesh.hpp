@@ -1,6 +1,7 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
+#include "bx/bx.h"
 #include "material.hpp"
 
 namespace Abyss
@@ -27,8 +28,14 @@ namespace Abyss
         virtual void reset() = 0;
 
         // Transform methods
-        virtual void setTransform(const float* matrix) = 0;
-        virtual const float* getMatrix() { return m_matrix; }
+        virtual void setTransform(const float* matrix)
+        {
+            bx::memCopy(m_matrix, matrix, sizeof(float) * 16);
+        }
+        virtual const float* getTransform()
+        {
+            return m_matrix;
+        }
 
     protected:
         float m_matrix[16] = {

@@ -79,11 +79,6 @@ namespace Abyss
         // Initialize with identity matrix
         bx::mtxIdentity(m_matrix);
     }
-    
-    void Box::setTransform(const float* matrix)
-    {
-        bx::memCopy(m_matrix, matrix, sizeof(float) * 16);
-    }
 
     void Box::render(MaterialHandle material)
     {
