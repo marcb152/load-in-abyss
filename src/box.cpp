@@ -3,7 +3,10 @@
 //
 
 #include "box.hpp"
-#include "bgfx/bgfx.h"
+
+#include <iostream>
+#include <memory>
+
 #include "bx/math.h"
 
 namespace Abyss
@@ -62,7 +65,7 @@ namespace Abyss
     bgfx::IndexBufferHandle Box::ms_ibh = BGFX_INVALID_HANDLE;
     bool Box::ms_initialized = false;
 
-    Box::Box()
+    Box::Box() : Mesh()
     {
         // Ensure shared resources are initialized
         if (!ms_initialized)
@@ -77,17 +80,12 @@ namespace Abyss
         bx::mtxIdentity(m_matrix);
     }
     
-    void Box::setMatrix(const float* matrix)
+    void Box::setTransform(const float* matrix)
     {
         bx::memCopy(m_matrix, matrix, sizeof(float) * 16);
     }
-    
-    const float* Box::getMatrix() const
-    {
-        return m_matrix;
-    }
 
-    void Box::render(bgfx::ProgramHandle program)
+    void Box::render(MaterialHandle material)
     {
         // Set transform directly from the matrix
         bgfx::setTransform(m_matrix);
@@ -95,22 +93,11 @@ namespace Abyss
         // Set vertex and index buffer
         bgfx::setVertexBuffer(0, ms_vbh);
         bgfx::setIndexBuffer(ms_ibh);
-
-        // Set render states
-        constexpr uint64_t state = 0
-            | BGFX_STATE_WRITE_R
-            | BGFX_STATE_WRITE_G
-            | BGFX_STATE_WRITE_B
-            | BGFX_STATE_WRITE_A
-            | BGFX_STATE_WRITE_Z
-            | BGFX_STATE_DEPTH_TEST_LESS
-            | BGFX_STATE_CULL_CW
-            | BGFX_STATE_MSAA;
         
-        bgfx::setState(state);
+        bgfx::setState(material->state);
 
         // Submit primitive for rendering
-        bgfx::submit(0, program);
+        bgfx::submit(0, material->shader);
     }
 
     void Box::reset()
@@ -133,8 +120,18 @@ namespace Abyss
             // Create static index buffer
             ms_ibh = bgfx::createIndexBuffer(
                     bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
-                    
-            ms_initialized = true;
+
+            // Check if handles are valid after creation
+            if (bgfx::isValid(ms_vbh) && bgfx::isValid(ms_ibh))
+            {
+                ms_initialized = true;
+            }
+            else
+            {
+                // Handle error: Failed to create buffers
+                std::cerr << "Failed to create vertex/index buffers" << std::endl;
+            }
+
         }
     }
 

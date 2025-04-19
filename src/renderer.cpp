@@ -23,21 +23,20 @@
 
 namespace Abyss::renderer
 {
-    bgfx::ProgramHandle m_program;
     bgfx::ProgramHandle m_simple_program;
     int64_t m_timeOffset;
 
     // Scene management
     std::vector<std::shared_ptr<Box>> m_boxes;
 
-    static bx::FileReaderI* s_fileReader = nullptr;
-
     static bgfx::ShaderHandle loadShader(const char *FILENAME);
     const bgfx::ViewId kClearView = 0;
 
-    // Static members of Box class
+    // Static members of assimp suzanne loading
     bgfx::VertexBufferHandle m_vbh = BGFX_INVALID_HANDLE;
     bgfx::IndexBufferHandle m_ibh = BGFX_INVALID_HANDLE;
+
+    Material material = {};
 
     int init(bgfx::Init init)
     {
@@ -58,7 +57,16 @@ namespace Abyss::renderer
         // load all programs in shaders directory
         bgfx::ShaderHandle vsh = loadShader("vs_cubes.sc.bin");
         bgfx::ShaderHandle fsh = loadShader("fs_cubes.sc.bin");
-        m_program = bgfx::createProgram(vsh, fsh, true);
+        material.shader = bgfx::createProgram(vsh, fsh, true);
+        material.state = 0
+            | BGFX_STATE_WRITE_R
+            | BGFX_STATE_WRITE_G
+            | BGFX_STATE_WRITE_B
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LESS
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA;
 
         vsh = loadShader("vs_simple.sc.bin");
         fsh = loadShader("fs_simple.sc.bin");
@@ -123,7 +131,7 @@ namespace Abyss::renderer
                     -15.0f + static_cast<float>(xx) * 3.0f,
                     -15.0f + static_cast<float>(yy) * 3.0f,
                     0.0f);
-                box->setMatrix(mtx);
+                box->setTransform(mtx);
                 
                 m_boxes.push_back(box);
             }
@@ -133,12 +141,12 @@ namespace Abyss::renderer
         return 0;
     }
 
-    void render(int width, int height)
+    void render(const int width, const int height)
     {
-        float time = (float) ((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
+        const auto time = static_cast<float>((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 
-        const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-        const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
+        constexpr bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+        constexpr bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 
         // Set view and projection matrix for view 0.
         {
@@ -146,11 +154,12 @@ namespace Abyss::renderer
             bx::mtxLookAt(view, eye, at);
 
             float proj[16];
-            bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+            bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height),
+                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
             bgfx::setViewTransform(kClearView, view, proj);
 
             // Set view 0 default viewport.
-            bgfx::setViewRect(kClearView, 0, 0, uint16_t(width), uint16_t(height));
+            bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
         }
 
         // This dummy draw call is here to make sure that view 0 is cleared
@@ -187,10 +196,10 @@ namespace Abyss::renderer
                 bx::mtxMul(mtx, mtxRot, mtxTrans);
 
                 // Update box matrix
-                box->setMatrix(mtx);
+                box->setTransform(mtx);
 
                 // Render the box
-                box->render(m_program);
+                box->render(&material);
             }
         }
 
@@ -270,7 +279,11 @@ namespace Abyss::renderer
         // Reset shared resources
         Box::resetShared();
 
-        bgfx::destroy(m_program);
+        // TODO: Add proper destructor for material
+        bgfx::destroy(material.shader);
+        bgfx::destroy(m_simple_program);
+        bgfx::destroy(m_vbh);
+        bgfx::destroy(m_ibh);
         bgfx::shutdown();
     }
 

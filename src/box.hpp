@@ -7,17 +7,18 @@
 
 #include "bgfx/bgfx.h"
 
-#include "model.hpp"
+#include "mesh.hpp"
+#include "material.hpp"
 
 namespace Abyss
 {
-    class Box
+    class Box final : Mesh
     {
     public:
         /// Constructor
         Box();
         /// Destructor
-        ~Box() = default;
+        ~Box() override = default;
         /// Copy constructor
         Box(const Box &other) = delete;
         /// Copy assignment operator
@@ -28,19 +29,16 @@ namespace Abyss
         Box &operator=(Box &&other) = default;
 
         // Initialize this box with identity matrix
-        void init();
+        void init() override;
         
         // Set the transform matrix directly
-        void setMatrix(const float* matrix);
-        
-        // Get the transform matrix directly
-        const float* getMatrix() const;
-        
+        void setTransform(const float* matrix) override;
+
         // Render this box with the given program 
-        void render(bgfx::ProgramHandle program);
+        void render(MaterialHandle material) override;
         
         // Clean up resources
-        void reset();
+        void reset() override;
         
         // Shared initialization for all boxes
         static void initShared();
@@ -49,14 +47,6 @@ namespace Abyss
         static void resetShared();
         
     private:
-        float m_matrix[16] = {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        }; // Identity matrix by default
-
-        // Shared resources for all boxes
         static bgfx::VertexBufferHandle ms_vbh;
         static bgfx::IndexBufferHandle ms_ibh;
         static bool ms_initialized;
