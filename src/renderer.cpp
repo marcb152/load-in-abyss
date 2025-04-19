@@ -7,14 +7,12 @@
 #include <cassert>
 
 #include "box.hpp"
+#include "imported_mesh.hpp"
 
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 
-#include <assimp/Importer.hpp> // C++ importer interface
-#include <assimp/postprocess.h> // Post processing flags
-#include <assimp/scene.h> // Output data structure
 #include <memory>
 #include <vector>
 #include "bgfx/platform.h"
@@ -23,7 +21,6 @@
 
 namespace Abyss::renderer
 {
-    bgfx::ProgramHandle m_simple_program;
     int64_t m_timeOffset;
 
     // Scene management
@@ -32,11 +29,11 @@ namespace Abyss::renderer
     static bgfx::ShaderHandle loadShader(const char *FILENAME);
     const bgfx::ViewId kClearView = 0;
 
-    // Static members of assimp suzanne loading
-    bgfx::VertexBufferHandle m_vbh = BGFX_INVALID_HANDLE;
-    bgfx::IndexBufferHandle m_ibh = BGFX_INVALID_HANDLE;
+    // Suzanne model
+    std::shared_ptr<ImportedMesh> m_suzanne;
 
     Material material = {};
+    Material simpleMaterial = {};
 
     int init(bgfx::Init init)
     {
@@ -70,51 +67,23 @@ namespace Abyss::renderer
 
         vsh = loadShader("vs_simple.sc.bin");
         fsh = loadShader("fs_simple.sc.bin");
-        m_simple_program = bgfx::createProgram(vsh, fsh, true);
+        simpleMaterial.shader = bgfx::createProgram(vsh, fsh, true);
+        simpleMaterial.state = 0
+            | BGFX_STATE_WRITE_R
+            | BGFX_STATE_WRITE_G
+            | BGFX_STATE_WRITE_B
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LESS
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA;
 
-        // Assimp loading for suzanne (temporary, for testing purposes)
+        // Load Suzanne model using ImportedMesh
+        m_suzanne = std::make_shared<ImportedMesh>("models/suzanne.obj");
+        if (!m_suzanne)
         {
-            // TODO:
-            // Create an instance of the Importer class
-            Assimp::Importer importer;
-
-            // And have it read the given file with some example postprocessing
-            // Usually - if speed is not the most important aspect for you - you'll
-            // probably to request more postprocessing than we do in this example.
-            const aiScene* scene = importer.ReadFile( "models/suzanne.obj",
-              aiProcess_CalcTangentSpace |
-              aiProcess_Triangulate            |
-              aiProcess_JoinIdenticalVertices  |
-              aiProcess_SortByPType);
-
-            // If the import failed, report it
-            if (nullptr == scene) {
-                std::cerr << importer.GetErrorString() << std::endl;
-                return false;
-            }
-
-            bgfx::VertexLayout ms_layout;
-            ms_layout
-                    .begin()
-                    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                    .end();
-
-            m_vbh = bgfx::createVertexBuffer(
-                bgfx::makeRef(scene->mMeshes[0]->mVertices, scene->mMeshes[0]->mNumVertices * sizeof(aiVector3D)),
-                ms_layout);
-
-            std::vector<unsigned short> indices;
-            indices.reserve(scene->mMeshes[0]->mNumFaces * 3);
-            for (unsigned int i = 0; i < scene->mMeshes[0]->mNumFaces; i++)
-            {
-                const aiFace& face = scene->mMeshes[0]->mFaces[i];
-                assert(face.mNumIndices == 3 && "Face must be triangulated");
-                indices.push_back(face.mIndices[0]);
-                indices.push_back(face.mIndices[1]);
-                indices.push_back(face.mIndices[2]);
-            }
-            m_ibh = bgfx::createIndexBuffer(
-                bgfx::makeRef(indices.data(), indices.size() * sizeof(unsigned short)));
+            std::cerr << "Failed to create suzanne mesh" << std::endl;
+            return false;
         }
         // Create 11x11 boxes
         for (uint32_t yy = 0; yy < 11; ++yy)
@@ -203,45 +172,27 @@ namespace Abyss::renderer
             }
         }
 
-        constexpr uint64_t state = 0
-            | BGFX_STATE_WRITE_R
-            | BGFX_STATE_WRITE_G
-            | BGFX_STATE_WRITE_B
-            | BGFX_STATE_WRITE_A
-            | BGFX_STATE_WRITE_Z
-            | BGFX_STATE_DEPTH_TEST_LESS
-            | BGFX_STATE_CULL_CW
-            | BGFX_STATE_MSAA
-            | UINT64_C(0) // 0 (default) for TriangleList
-            ;
-
-        // Render suzanne
-        // Calculate and set transform
+        // Render suzanne using ImportedMesh
         float mtxRot[16];
         float mtxTrans[16];
         float mtxScale[16];
         float mtx[16];
-
+        
         // Create transformation matrices
         bx::mtxScale(mtxScale, 2.0f);                                // Scale by 2.0
         bx::mtxRotateXY(mtxRot, time + 0.21f, time + 0.37f);         // Rotation over time
         bx::mtxTranslate(mtxTrans, -12.0f, -12.0f, -5.0f);           // Translation position
-
+        
         // Combine matrices: first scale, then rotate, then translate
         float tempMtx[16];
         bx::mtxMul(tempMtx, mtxScale, mtxRot);  // Apply scaling then rotation
         bx::mtxMul(mtx, tempMtx, mtxTrans);     // Apply translation last
+        
+        // Set the transform on the mesh
+        m_suzanne->setTransform(mtx);
 
-        bgfx::setTransform(mtx);
-
-        // Set vertex and index buffer
-        bgfx::setVertexBuffer(0, m_vbh);
-        bgfx::setIndexBuffer(m_ibh);
-
-        bgfx::setState(state);
-
-        // Submit primitive for rendering
-        bgfx::submit(0, m_simple_program);
+        // Render the mesh with the material
+        m_suzanne->render(&simpleMaterial);
 
         // Use debug font to print information about this example.
         bgfx::dbgTextClear();
@@ -279,11 +230,12 @@ namespace Abyss::renderer
         // Reset shared resources
         Box::resetShared();
 
+        // Release suzanne mesh
+        m_suzanne.reset();
+    
         // TODO: Add proper destructor for material
         bgfx::destroy(material.shader);
-        bgfx::destroy(m_simple_program);
-        bgfx::destroy(m_vbh);
-        bgfx::destroy(m_ibh);
+        bgfx::destroy(simpleMaterial.shader);
         bgfx::shutdown();
     }
 
