@@ -15,9 +15,11 @@
 
 #include <memory>
 #include <vector>
+
 #include "bgfx/platform.h"
 #include "bx/readerwriter.h"
 #include "bx/timer.h"
+#include "easy_matrix.hpp"
 
 namespace Abyss::renderer
 {
@@ -146,26 +148,18 @@ namespace Abyss::renderer
                 auto& box = m_boxes[index++];
 
                 // Create rotation and translation matrices
-                float mtxRot[16];
-                float mtxTrans[16];
-                float mtx[16];
-
-                // Set rotation matrix based on time
-                bx::mtxRotateXY(mtxRot,
-                    time + static_cast<float>(xx) * 0.21f,
-                    time + static_cast<float>(yy) * 0.37f);
-
-                // Set translation matrix
-                bx::mtxTranslate(mtxTrans,
-                    -15.0f + static_cast<float>(xx) * 3.0f,
-                    -15.0f + static_cast<float>(yy) * 3.0f,
-                    0.0f);
-
-                // Combine rotation and translation
-                bx::mtxMul(mtx, mtxRot, mtxTrans);
+                EasyMatrix easyMatrix = {};
+                easyMatrix
+                    .RotateXY(
+                        time + static_cast<float>(xx) * 0.21f,
+                        time + static_cast<float>(yy) * 0.37f)
+                    .Translate(
+                        -15.0f + static_cast<float>(xx) * 3.0f,
+                        -15.0f + static_cast<float>(yy) * 3.0f,
+                        0.0f);
 
                 // Update box matrix
-                box->setTransform(mtx);
+                box->setTransform(easyMatrix.GetMatrix());
 
                 // Render the box
                 box->render(&material);
@@ -173,49 +167,17 @@ namespace Abyss::renderer
         }
 
         // Render suzanne using ImportedMesh
-        float mtxRot[16];
-        float mtxTrans[16];
-        float mtxScale[16];
-        float mtx[16];
-        
-        // Create transformation matrices
-        bx::mtxScale(mtxScale, 2.0f);                                // Scale by 2.0
-        bx::mtxRotateXY(mtxRot, time + 0.21f, time + 0.37f);         // Rotation over time
-        bx::mtxTranslate(mtxTrans, -12.0f, -12.0f, -5.0f);           // Translation position
-        
-        // Combine matrices: first scale, then rotate, then translate
-        float tempMtx[16];
-        bx::mtxMul(tempMtx, mtxScale, mtxRot);  // Apply scaling then rotation
-        bx::mtxMul(mtx, tempMtx, mtxTrans);     // Apply translation last
-        
+        EasyMatrix easyMatrix = {};
+        easyMatrix
+            .Scale(2.0f)
+            .RotateXY(time + 0.21f, time + 0.37f)
+            .Translate(-12.0f, -12.0f, -5.0f);
+
         // Set the transform on the mesh
-        m_suzanne->setTransform(mtx);
+        m_suzanne->setTransform(easyMatrix.GetMatrix());
 
         // Render the mesh with the material
         m_suzanne->render(&simpleMaterial);
-
-        // Use debug font to print information about this example.
-        bgfx::dbgTextClear();
-        // Commented line for logo from logo.h in
-        // https://github.com/jpcy/bgfx-minimal-example/blob/master/helloworld.cpp
-        // bgfx::dbgTextImage(bx::max<uint16_t>(uint16_t(width / 2 / 8), 20) - 20, bx::max<uint16_t>(uint16_t(height / 2
-        // / 16), 6) - 6, 40, 12, s_logo, 160);
-        bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
-        bgfx::dbgTextPrintf(0, 1, 0x0f,
-                            "Color can be changed with ANSI "
-                            "\x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-        bgfx::dbgTextPrintf(80, 1, 0x0f,
-                            "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    "
-                            "\x1b[; 7m    \x1b[0m");
-        bgfx::dbgTextPrintf(80, 2, 0x0f,
-                            "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    "
-                            "\x1b[;15m    \x1b[0m");
-        const bgfx::Stats *stats = bgfx::getStats();
-        bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.",
-                            stats->width, stats->height, stats->textWidth, stats->textHeight);
-        // Enable stats or debug text.
-        // WARNING: Enabling debug text will disable the rendering (since resources overlap GPU-side)
-        // bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
