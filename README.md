@@ -18,10 +18,10 @@ cmake CMakeLists.txt -DASSIMP_NO_EXPORT=ON
 cmake --build .
 ```
 
-> ![NOTE]
+> [!NOTE]
 > The first build might take a while (5 to 10 minutes), but subsequent builds will be faster.
 
-> ![WARNING]
+> [!WARNING]
 > Make sure to have the latest version of CMake, (make, gcc, g++) or ninja or Clang installed.
 > You must also have Zlib installed for Assimp to work (or uncomment the line `set(ASSIMP_BUILD_ZLIB ON)` in CMakeFile.txt).
 

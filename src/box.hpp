@@ -29,7 +29,7 @@ namespace Abyss
         Box &operator=(Box &&other) = default;
 
         void init() override;
-        void render(MaterialHandle material, int viewId) override;
+        void render(MaterialHandle material, uint16_t viewId) override;
         void reset() override;
         
         // Shared initialization for all boxes

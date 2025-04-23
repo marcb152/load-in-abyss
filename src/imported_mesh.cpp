@@ -35,7 +35,7 @@ namespace Abyss
     {
     }
 
-    void ImportedMesh::render(MaterialHandle material, int viewId)
+    void ImportedMesh::render(MaterialHandle material, uint16_t viewId)
     {
         if (!m_initialized || !bgfx::isValid(m_vbh) || !bgfx::isValid(m_ibh))
         {

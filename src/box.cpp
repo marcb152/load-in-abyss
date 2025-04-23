@@ -80,7 +80,7 @@ namespace Abyss
         bx::mtxIdentity(m_matrix);
     }
 
-    void Box::render(MaterialHandle material, int viewId)
+    void Box::render(MaterialHandle material, uint16_t viewId)
     {
         // Set transform directly from the matrix
         bgfx::setTransform(m_matrix);
