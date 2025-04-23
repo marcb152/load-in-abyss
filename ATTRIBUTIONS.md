@@ -12,9 +12,9 @@ This project uses code from the following third-party sources. The use of this c
 - **License Text:** You can find the full license text at: [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)
 - **Source Code:** The original source code is available at: [https://github.com/MissingBitStudios/igneous](https://github.com/MissingBitStudios/igneous)
 - **Notice:** Portions of the Igneous engine code have been incorporated into this project and can be found within these files:
-    - `src/model.hpp`: Edited the namespace
-    - `src/material.hpp`: Edited the namespace
-    - 
+    - `src/mesh.hpp`: Took inspiration from the `model.hpp` file of Igneous.
+    - `src/material.hpp`: Edited the namespace.
+
     *[Optional: If modifications were made, briefly describe the nature of the changes here if desired, although simply stating that changes were made is often sufficient.]*
 
 ---
@@ -45,7 +45,8 @@ This project uses code from the following third-party sources. The use of this c
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     ```
-- **Usage Notice:** Portions of the minecraft-again code may have been incorporated into this project. [Choose ONE of the following statements and delete the other:]
+- **Usage Notice:** Portions of the minecraft-again code may have been incorporated into this project.
+- [TEMPORARY, no code copy-pasted yet, but inspiration was taken from it. Choose ONE of the following statements and delete the other:]
   * No modifications were made to the original minecraft-again code used.
   * Modifications were made to the original minecraft-again code used in this project.
 

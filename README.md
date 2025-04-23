@@ -23,6 +23,7 @@ cmake --build .
 
 > ![WARNING]
 > Make sure to have the latest version of CMake, (make, gcc, g++) or ninja or Clang installed.
+> You must also have Zlib installed for Assimp to work (or uncomment the line `set(ASSIMP_BUILD_ZLIB ON)` in CMakeFile.txt).
 
 #### Versions used
 
@@ -30,7 +31,7 @@ C++ 23
 
 ## Features
 
-- [x] Cross-platform: Windows, Linux (Xorg and Wayland), MacOS (Untested)
+- [x] Cross-platform: Windows, Linux (Xorg and Wayland), macOS (Untested)
 - [x] 3D
 
 ## Authors
@@ -47,7 +48,7 @@ C++ 23
 
 ## Inspiration & references
 
-Huge thanks to these amazing people & projects:
+Huge thanks to these awesome people and projects:
 - [Igneous is an open source game engine written in C++](https://github.com/MissingBitStudios/igneous)
 - [CatDogEngine: A cross-platform game engine/editor written in modern C++ (WIP)](https://github.com/meta4d-me/CatDogEngine)
 - [Minecraft, but it's built on top of a deferred renderer](https://github.com/jdah/minecraft-again)

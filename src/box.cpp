@@ -80,19 +80,24 @@ namespace Abyss
         bx::mtxIdentity(m_matrix);
     }
 
-    void Box::render(MaterialHandle material)
+    void Box::render(MaterialHandle material, int viewId)
     {
         // Set transform directly from the matrix
         bgfx::setTransform(m_matrix);
 
         // Set vertex and index buffer
+        if (!bgfx::isValid(ms_vbh) || !bgfx::isValid(ms_ibh))
+        {
+            std::cerr << "Box::render: Vertex or Index buffer not valid!" << std::endl;
+            return; // nothing to draw – buffers missing
+        }
         bgfx::setVertexBuffer(0, ms_vbh);
         bgfx::setIndexBuffer(ms_ibh);
         
         bgfx::setState(material->state);
 
         // Submit primitive for rendering
-        bgfx::submit(0, material->shader);
+        bgfx::submit(viewId, material->shader);
     }
 
     void Box::reset()

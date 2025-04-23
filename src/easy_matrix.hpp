@@ -28,10 +28,10 @@ struct EasyMatrix
 
     /**
      * Applies scaling to the matrix
-     * @param scale Uniform scaling factor
+     * @param s Uniform scaling factor
      * @return Reference to this object for method chaining
      */
-    EasyMatrix& Scale(float scale);
+    EasyMatrix& scale(float s);
 
     /**
      * Applies scaling to the matrix
@@ -40,7 +40,7 @@ struct EasyMatrix
      * @param sz Z-axis scaling factor
      * @return Reference to this object for method chaining
      */
-    EasyMatrix& Scale(float sx, float sy, float sz);
+    EasyMatrix& scale(float sx, float sy, float sz);
     
     /**
      * Applies XY rotation to the matrix
@@ -48,7 +48,7 @@ struct EasyMatrix
      * @param ay Y-axis rotation in radians
      * @return Reference to this object for method chaining
      */
-    EasyMatrix& RotateXY(float ax, float ay);
+    EasyMatrix& rotateXY(float ax, float ay);
     
     /**
      * Applies translation to the matrix
@@ -57,20 +57,20 @@ struct EasyMatrix
      * @param z Z-axis translation
      * @return Reference to this object for method chaining
      */
-    EasyMatrix& Translate(float x, float y, float z);
+    EasyMatrix& translate(float x, float y, float z);
 
     /**
      * Gets a pointer to the underlying matrix
      * @return Pointer to the 16-element float array representing the matrix
      */
-    [[nodiscard]] const float* GetMatrix() const;
+    [[nodiscard]] const float* getMatrix() const;
 
     /**
      * Combines the current matrix with another matrix
      * @param temp Pointer to the matrix to combine with
      * @return Reference to this object for method chaining
      */
-    EasyMatrix& Combine(const float* temp);
+    EasyMatrix& combine(const float* temp);
 };
 
 } // Abyss

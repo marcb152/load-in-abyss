@@ -13,38 +13,38 @@ namespace Abyss
         bx::mtxIdentity(m_matrix);
     }
 
-    EasyMatrix& EasyMatrix::Scale(float scale)
+    EasyMatrix& EasyMatrix::scale(float s)
     {
-        return Scale(scale, scale, scale);
+        return scale(s, s, s);
     }
 
-    EasyMatrix& EasyMatrix::Scale(float sx, float sy, float sz)
+    EasyMatrix& EasyMatrix::scale(float sx, float sy, float sz)
     {
         float temp[16] = {};
         bx::mtxScale(temp, sx, sy, sz);
-        return Combine(temp);
+        return combine(temp);
     }
 
-    EasyMatrix& EasyMatrix::RotateXY(float ax, float ay)
+    EasyMatrix& EasyMatrix::rotateXY(float ax, float ay)
     {
         float temp[16] = {};
         bx::mtxRotateXY(temp, ax, ay);
-        return Combine(temp);
+        return combine(temp);
     }
 
-    EasyMatrix& EasyMatrix::Translate(float x, float y, float z)
+    EasyMatrix& EasyMatrix::translate(float x, float y, float z)
     {
         float temp[16] = {};
         bx::mtxTranslate(temp, x, y, z);
-        return Combine(temp);
+        return combine(temp);
     }
 
-    const float* EasyMatrix::GetMatrix() const
+    const float* EasyMatrix::getMatrix() const
     {
         return m_matrix;
     }
 
-    EasyMatrix& EasyMatrix::Combine(const float* temp)
+    EasyMatrix& EasyMatrix::combine(const float* temp)
     {
         float copy[16] = {};
         bx::memCopy(copy, m_matrix, sizeof(float) * 16);

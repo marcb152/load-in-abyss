@@ -30,7 +30,7 @@ namespace Abyss
         ImportedMesh &operator=(ImportedMesh &&other) = default;
 
         void init() override;
-        void render(MaterialHandle material) override;
+        void render(MaterialHandle material, int viewId) override;
         void reset() override;
 
     private:

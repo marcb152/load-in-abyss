@@ -85,7 +85,7 @@ namespace Abyss::renderer
         if (!m_suzanne)
         {
             std::cerr << "Failed to create suzanne mesh" << std::endl;
-            return false;
+            return -1;
         }
         // Create 11x11 boxes
         for (uint32_t yy = 0; yy < 11; ++yy)
@@ -150,34 +150,34 @@ namespace Abyss::renderer
                 // Create rotation and translation matrices
                 EasyMatrix easyMatrix = {};
                 easyMatrix
-                    .RotateXY(
+                    .rotateXY(
                         time + static_cast<float>(xx) * 0.21f,
                         time + static_cast<float>(yy) * 0.37f)
-                    .Translate(
+                    .translate(
                         -15.0f + static_cast<float>(xx) * 3.0f,
                         -15.0f + static_cast<float>(yy) * 3.0f,
                         0.0f);
 
                 // Update box matrix
-                box->setTransform(easyMatrix.GetMatrix());
+                box->setTransform(easyMatrix.getMatrix());
 
                 // Render the box
-                box->render(&material);
+                box->render(&material, kClearView);
             }
         }
 
         // Render suzanne using ImportedMesh
         EasyMatrix easyMatrix = {};
         easyMatrix
-            .Scale(2.0f)
-            .RotateXY(time + 0.21f, time + 0.37f)
-            .Translate(-12.0f, -12.0f, -5.0f);
+            .scale(2.0f)
+            .rotateXY(time + 0.21f, time + 0.37f)
+            .translate(-12.0f, -12.0f, -5.0f);
 
         // Set the transform on the mesh
-        m_suzanne->setTransform(easyMatrix.GetMatrix());
+        m_suzanne->setTransform(easyMatrix.getMatrix());
 
         // Render the mesh with the material
-        m_suzanne->render(&simpleMaterial);
+        m_suzanne->render(&simpleMaterial, kClearView);
 
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
@@ -219,11 +219,18 @@ namespace Abyss::renderer
 
         size_t shaderLen = strlen(shaderPath);
         size_t fileLen = strlen(FILENAME);
-        char *filePath = static_cast<char *>(malloc(shaderLen + fileLen));
+        // +1 for '\0'
+        char* filePath = static_cast<char*>(malloc(shaderLen + fileLen + 1));
         strcpy(filePath, shaderPath);
         strcat(filePath, FILENAME);
 
         FILE *file = fopen(filePath, "rb");
+        if (file == nullptr)
+        {
+            std::cerr << "Could not open shader file: " << filePath << std::endl;
+            free(filePath);
+            return BGFX_INVALID_HANDLE;
+        }
         fseek(file, 0, SEEK_END);
         long fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);

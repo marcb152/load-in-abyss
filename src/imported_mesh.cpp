@@ -35,9 +35,14 @@ namespace Abyss
     {
     }
 
-    void ImportedMesh::render(MaterialHandle material)
+    void ImportedMesh::render(MaterialHandle material, int viewId)
     {
         if (!m_initialized || !bgfx::isValid(m_vbh) || !bgfx::isValid(m_ibh))
+        {
+            return;
+        }
+        // Check if material is valid
+        if (!material || !bgfx::isValid(material->shader))
         {
             return;
         }
@@ -66,7 +71,7 @@ namespace Abyss
         }
         
         // Submit primitive for rendering
-        bgfx::submit(0, material->shader);
+        bgfx::submit(viewId, material->shader);
     }
 
     void ImportedMesh::reset()
@@ -116,13 +121,20 @@ namespace Abyss
             .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
             .end();
 
-        // Create vertex buffer
-        m_vbh = bgfx::createVertexBuffer(
-            bgfx::makeRef(mesh->mVertices, mesh->mNumVertices * sizeof(aiVector3D)),
-            layout);
+        // Creates vertex buffer
+        const bgfx::Memory* vbMem = bgfx::copy(mesh->mVertices, mesh->mNumVertices * sizeof(aiVector3D));
+        m_vbh = bgfx::createVertexBuffer(vbMem, layout);
 
         // Extract indices and convert to the appropriate format
         std::vector<uint16_t> indices;
+        // Enforce a maximum of 65,535 vertices for 16‑bit indices
+        if (mesh->mNumVertices > std::numeric_limits<uint16_t>::max())
+        {
+            std::cerr << "Mesh too large for 16‑bit indices (" << mesh->mNumVertices
+                      << " vertices). Use 32‑bit indices or split the mesh."
+                      << std::endl;
+            return false;
+        }
         indices.reserve(mesh->mNumFaces * 3);
         
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -135,10 +147,11 @@ namespace Abyss
             indices.push_back(static_cast<uint16_t>(face.mIndices[2]));
         }
 
-        // Create index buffer
-        m_ibh = bgfx::createIndexBuffer(
-            bgfx::makeRef(indices.data(), indices.size() * sizeof(uint16_t)));
+        // Creates index buffer
+        const bgfx::Memory* ibMem = bgfx::copy(indices.data(), indices.size() * sizeof(uint16_t));
+        m_ibh = bgfx::createIndexBuffer(ibMem);
 
+        importer.FreeScene();
         return bgfx::isValid(m_vbh) && bgfx::isValid(m_ibh);
     }
 } // Abyss

@@ -3,6 +3,10 @@ project(LoadInAbyss)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Assimp environment variables
+set(ASSIMP_NO_EXPORT ON)
+# Uncomment this line if you haven't installed zlib and want to build it
+# set(ASSIMP_BUILD_ZLIB ON)
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/bgfx.cmake)
@@ -58,8 +62,5 @@ target_link_libraries(LoadInAbyss PRIVATE
         )
 target_include_directories(LoadInAbyss PRIVATE
         "${PROJECT_BINARY_DIR}"
-        "${PROJECT_SOURCE_DIR}/bgfx.cmake"
-        "${PROJECT_SOURCE_DIR}/glfw"
-        "${PROJECT_SOURCE_DIR}/assimp"
         "${CMAKE_BINARY_DIR}/shaders"
 )

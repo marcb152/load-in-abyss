@@ -24,7 +24,7 @@ namespace Abyss
 
         // Core mesh functionality
         virtual void init() = 0;
-        virtual void render(Abyss::MaterialHandle material) = 0;
+        virtual void render(MaterialHandle material, int viewId) = 0;
         virtual void reset() = 0;
 
         // Transform methods
