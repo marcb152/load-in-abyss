@@ -5,8 +5,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Assimp environment variables
 set(ASSIMP_NO_EXPORT ON)
-# Uncomment this line if you haven't installed zlib and want to build it
-# set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_ZLIB ON)
+set(BUILD_SHARED_LIBS OFF)
+set(ASSIMP_BUILD_TESTS OFF)
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/bgfx.cmake)
@@ -49,16 +50,13 @@ endforeach()
 file(GLOB SOURCES src/*.cpp)
 add_executable(LoadInAbyss ${SOURCES} ${SHADERS_FILES})
 
-# ZLib is required for assimp
-find_package(ZLIB REQUIRED)
-
 target_link_libraries(LoadInAbyss PRIVATE
         glfw
         bgfx
         bimg
         bx
+        zlibstatic
         assimp
-        ${ZLIB_LIBRARIES}
         )
 target_include_directories(LoadInAbyss PRIVATE
         "${PROJECT_BINARY_DIR}"

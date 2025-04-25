@@ -4,10 +4,9 @@
  * https://github.com/jpcy/bgfx-minimal-example/blob/master/helloworld.cpp
  */
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include <bx/bx.h>
 #include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
 #if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_WAYLAND

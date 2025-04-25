@@ -1,33 +1,24 @@
 # Load in Abyss
 
-Small pure C++ game made in 3 months with friends to learn C++.
+A small, pure C++ game developed over three months in collaboration with friends to learn modern C++.
 
 ## Installation
 
 ```bash
-git clone --recurse-submodules -j2 git@github.com:marcb152/load-in-abyss.git
+git clone git@github.com:marcb152/load-in-abyss.git
 cd load-in-abyss
 git submodule update --init --recursive
 ```
 
-#### Building assimp
-
-```bash
-cd libs/assimp
-cmake CMakeLists.txt -DASSIMP_NO_EXPORT=ON
-cmake --build .
-```
-
 > [!NOTE]
-> The first build might take a while (5 to 10 minutes), but subsequent builds will be faster.
+> The first build might take a while (5 to 10 minutes), but later builds will be faster.
 
 > [!WARNING]
 > Make sure to have the latest version of CMake, (make, gcc, g++) or ninja or Clang installed.
-> You must also have Zlib installed for Assimp to work (or uncomment the line `set(ASSIMP_BUILD_ZLIB ON)` in CMakeFile.txt).
 
 #### Versions used
 
-C++ 23
+C++23
 
 ## Features
 
