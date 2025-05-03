@@ -38,6 +38,7 @@ namespace Abyss
 
         bgfx::VertexBufferHandle m_vbh;
         bgfx::IndexBufferHandle m_ibh;
+	    bgfx::UniformHandle u_lightPos;
         bool m_initialized;
     };
 } // Abyss

@@ -55,7 +55,9 @@ namespace Abyss::renderer
         // Create program from shaders.
         // load all programs in shaders directory
         bgfx::ShaderHandle vsh = loadShader("vs_cubes.sc.bin");
+        bgfx::setName(vsh, "vs_cubes");
         bgfx::ShaderHandle fsh = loadShader("fs_cubes.sc.bin");
+        bgfx::setName(fsh, "fs_cubes");
         material.shader = bgfx::createProgram(vsh, fsh, true);
         material.state = 0
             | BGFX_STATE_WRITE_R
@@ -67,8 +69,10 @@ namespace Abyss::renderer
             | BGFX_STATE_CULL_CW
             | BGFX_STATE_MSAA;
 
-        vsh = loadShader("vs_simple.sc.bin");
-        fsh = loadShader("fs_simple.sc.bin");
+        vsh = loadShader("vs_phong_light.sc.bin");
+        bgfx::setName(vsh, "vs_phong_light");
+        fsh = loadShader("fs_phong_light.sc.bin");
+        bgfx::setName(fsh, "fs_phong_light");
         simpleMaterial.shader = bgfx::createProgram(vsh, fsh, true);
         simpleMaterial.state = 0
             | BGFX_STATE_WRITE_R
@@ -77,7 +81,7 @@ namespace Abyss::renderer
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
             | BGFX_STATE_DEPTH_TEST_LESS
-            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_CULL_CCW
             | BGFX_STATE_MSAA;
 
         // Load Suzanne model using ImportedMesh

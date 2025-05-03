@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Assimp environment variables
 set(ASSIMP_NO_EXPORT ON)
 set(ASSIMP_BUILD_ZLIB ON)
-set(BUILD_SHARED_LIBS OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 
 add_subdirectory(libs/glfw)
@@ -16,8 +15,8 @@ add_subdirectory(libs/assimp)
 # Get all shaders in the shaders directory for each child directory
 FILE(GLOB children RELATIVE ${CMAKE_SOURCE_DIR}/res/shaders res/shaders/*)
 SET(SHADERS_FILES "")
-FOREACH(child ${children})
-    IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders/${child}/)
+FOREACH (child ${children})
+    IF (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders/${child}/)
         message("Shader directory found: shaders/${child}")
         # Get vertex shader (vs) in the ${child} folder
         bgfx_compile_shaders(
@@ -26,6 +25,11 @@ FOREACH(child ${children})
                 VARYING_DEF ${CMAKE_SOURCE_DIR}/res/shaders/${child}/varying.def.sc
                 OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
                 INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/libs/bgfx.cmake/bgfx/src
+                # Windows specific debugging options for shaders
+                # DEBUG ON
+                # WERROR ON
+                # DISASM ON
+                # O 0
         )
         LIST(APPEND SHADERS_FILES res/shaders/${child}/vs_${child}.sc)
         # Get fragment shader (fs) in the ${child} folder
@@ -35,17 +39,22 @@ FOREACH(child ${children})
                 VARYING_DEF ${CMAKE_SOURCE_DIR}/res/shaders/${child}/varying.def.sc
                 OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
                 INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/libs/bgfx.cmake/bgfx/src
+                # Windows specific debugging options for shaders
+                # DEBUG ON
+                # WERROR ON
+                # DISASM ON
+                # O 0
         )
         LIST(APPEND SHADERS_FILES res/shaders/${child}/fs_${child}.sc)
-    ENDIF()
-ENDFOREACH()
+    ENDIF ()
+ENDFOREACH ()
 
 # Copy models to output dir
 file(GLOB_RECURSE models LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR}/res/models res/models/*)
-foreach(model ${models})
+foreach (model ${models})
     message("Model found: models/${model}")
     file(COPY ${CMAKE_SOURCE_DIR}/res/models/${model} DESTINATION ${CMAKE_BINARY_DIR}/models)
-endforeach()
+endforeach ()
 
 file(GLOB SOURCES src/*.cpp)
 add_executable(LoadInAbyss ${SOURCES} ${SHADERS_FILES})
@@ -57,7 +66,7 @@ target_link_libraries(LoadInAbyss PRIVATE
         bx
         zlibstatic
         assimp
-        )
+)
 target_include_directories(LoadInAbyss PRIVATE
         "${PROJECT_BINARY_DIR}"
         "${CMAKE_BINARY_DIR}/shaders"

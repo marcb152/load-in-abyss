@@ -88,6 +88,7 @@ int main()
     {
         init.platformData.type = bgfx::NativeWindowHandleType::Default;
     }
+    init.debug = true;
 
     renderer::init(init);
 

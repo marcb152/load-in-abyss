@@ -65,10 +65,13 @@ namespace Abyss
         
         // Set textures
         uint8_t textureStage = 0;
-        for (const auto& texture : material->textures)
+        for (const auto &texture: material->textures)
         {
             bgfx::setTexture(textureStage++, texture.first, texture.second);
         }
+
+        constexpr float lightPos[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        bgfx::setUniform(u_lightPos, lightPos);
         
         // Submit primitive for rendering
         bgfx::submit(viewId, material->shader);
@@ -87,6 +90,8 @@ namespace Abyss
             bgfx::destroy(m_ibh);
             m_ibh = BGFX_INVALID_HANDLE;
         }
+        // Destroy uniform
+        bgfx::destroy(u_lightPos);
 
         m_initialized = false;
     }
@@ -101,6 +106,7 @@ namespace Abyss
             aiProcess_CalcTangentSpace      |
             aiProcess_Triangulate           |
             aiProcess_JoinIdenticalVertices |
+            aiProcess_GenNormals            |
             aiProcess_SortByPType);
 
         // Check if import failed
@@ -119,10 +125,18 @@ namespace Abyss
         layout
             .begin()
             .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
             .end();
 
         // Creates vertex buffer
-        const bgfx::Memory* vbMem = bgfx::copy(mesh->mVertices, mesh->mNumVertices * sizeof(aiVector3D));
+        std::vector<aiVector3D> verts_norms;
+        verts_norms.reserve(mesh->mNumVertices * 2);
+        for (int i = 0; i < mesh->mNumVertices; ++i)
+        {
+            verts_norms.push_back(mesh->mVertices[i]);
+            verts_norms.push_back(mesh->mNormals[i]);
+        }
+        const bgfx::Memory* vbMem = bgfx::copy(verts_norms.data(), verts_norms.size() * sizeof(aiVector3D));
         m_vbh = bgfx::createVertexBuffer(vbMem, layout);
 
         // Extract indices and convert to the appropriate format
@@ -150,6 +164,9 @@ namespace Abyss
         // Creates index buffer
         const bgfx::Memory* ibMem = bgfx::copy(indices.data(), indices.size() * sizeof(uint16_t));
         m_ibh = bgfx::createIndexBuffer(ibMem);
+
+        // Create uniform for light position
+        u_lightPos = bgfx::createUniform("u_lightPos", bgfx::UniformType::Vec4);
 
         importer.FreeScene();
         return bgfx::isValid(m_vbh) && bgfx::isValid(m_ibh);
