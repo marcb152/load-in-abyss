@@ -70,7 +70,7 @@ namespace Abyss
             bgfx::setTexture(textureStage++, texture.first, texture.second);
         }
 
-        constexpr float lightPos[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        constexpr float lightPos[4] = { 0.0f, 0.0f, -10.0f, 0.0f };
         bgfx::setUniform(u_lightPos, lightPos);
         
         // Submit primitive for rendering

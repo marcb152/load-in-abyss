@@ -9,7 +9,7 @@ void main()
     vec3 materialColor = vec3( 0.7f,0.7f,0.9f );
     vec3 ambient = vec3( 0.05f,0.05f,0.05f );
     vec3 diffuseColor = vec3( 1.0f,1.0f,1.0f );
-    float diffuseIntensity = 10.0f;
+    float diffuseIntensity = 2.0f;
     float attConst = 1.0f;
     float attLin = 0.045f;
     float attQuad = 0.0075f;

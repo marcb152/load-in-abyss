@@ -173,9 +173,9 @@ namespace Abyss::renderer
         // Render suzanne using ImportedMesh
         EasyMatrix easyMatrix = {};
         easyMatrix
-            .scale(2.0f)
+            .scale(5.0f)
             .rotateXY(time + 0.21f, time + 0.37f)
-            .translate(-12.0f, -12.0f, -5.0f);
+            .translate(-8.0f, -8.0f, -5.0f);
 
         // Set the transform on the mesh
         m_suzanne->setTransform(easyMatrix.getMatrix());
