@@ -18,6 +18,7 @@ namespace Abyss::Input
 {
     // Map to store key-callback pairs
     static std::unordered_map<int, input_callback> keyBindings;
+    static double prevMouseX, prevMouseY;
     
     void init(GLFWwindow* window)
     {
@@ -88,6 +89,10 @@ namespace Abyss::Input
 	{
 		mouseX = xpos;
 		mouseY = ypos;
+        mouseXDelta = xpos - prevMouseX;
+        mouseYDelta = ypos - prevMouseY;
+        prevMouseX = xpos;
+        prevMouseY = ypos;
 	}
 
 	void cursorEnterCallback([[maybe_unused]]GLFWwindow* window, int entered)
@@ -108,6 +113,8 @@ namespace Abyss::Input
 	void setCursorVisible(bool visible)
 	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+        // Get Raw mouse motion when cursor is hidden
+        glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, visible ? GLFW_FALSE : GLFW_TRUE);
 	}
 
     GLFWwindow* m_window;
@@ -115,4 +122,5 @@ namespace Abyss::Input
     bool mouseButtons[GLFW_MOUSE_BUTTON_LAST + 1] = { 0 };
     double scrollX, scrollY = 0;
     double mouseX, mouseY = 0;
+    double mouseXDelta, mouseYDelta = 0;
 } // Abyss

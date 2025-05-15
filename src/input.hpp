@@ -37,6 +37,7 @@ namespace Abyss::Input
     extern bool mouseButtons[GLFW_MOUSE_BUTTON_LAST + 1];
     extern double scrollX, scrollY;
     extern double mouseX, mouseY;
+    extern double mouseXDelta, mouseYDelta;
 } // Abyss
 
 #endif //INPUT_HPP

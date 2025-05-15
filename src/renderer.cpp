@@ -40,6 +40,14 @@ namespace Abyss::renderer
     Material material = {};
     Material simpleMaterial = {};
 
+    bool cursor_enabled = true;
+
+    void enable_cursor_callback([[maybe_unused]]GLFWwindow* window)
+    {
+        cursor_enabled = !cursor_enabled;
+        Input::setCursorVisible(cursor_enabled);
+    }
+
     int init(bgfx::Init init)
     {
         // Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
@@ -114,6 +122,7 @@ namespace Abyss::renderer
             }
         }
 
+        Input::bind(GLFW_KEY_LEFT_CONTROL, enable_cursor_callback);
         m_timeOffset = bx::getHPCounter();
         return 0;
     }
@@ -151,6 +160,15 @@ namespace Abyss::renderer
             {
                 m_camera->Translate( { 0.0f,-time,0.0f } );
             }
+
+            std::cout << Input::mouseXDelta << " " << Input::mouseYDelta << std::endl;
+            // while( const auto delta = wnd.mouse.ReadRawDelta() )
+            // {
+            //     if( !wnd.CursorEnabled() )
+            //     {
+            //         m_camera->Rotate( (float)delta->x,(float)delta->y );
+            //     }
+            // }
 
             float proj[16];
             bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f,
