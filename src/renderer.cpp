@@ -12,11 +12,14 @@
 #include <vector>
 
 #include "bgfx/platform.h"
+#include "box.hpp"
 #include "bx/readerwriter.h"
 #include "bx/timer.h"
+#include "camera.hpp"
 #include "easy_matrix.hpp"
-#include "box.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "imported_mesh.hpp"
+#include "input.hpp"
 
 namespace Abyss::renderer
 {
@@ -30,6 +33,9 @@ namespace Abyss::renderer
 
     // Suzanne model
     std::shared_ptr<ImportedMesh> m_suzanne;
+
+    // Camera
+    std::unique_ptr<Camera> m_camera = std::make_unique<Camera>();
 
     Material material = {};
     Material simpleMaterial = {};
@@ -121,13 +127,35 @@ namespace Abyss::renderer
 
         // Set view and projection matrix for view 0.
         {
-            float view[16];
-            bx::mtxLookAt(view, eye, at);
+            if( Input::keys[GLFW_KEY_W] )
+            {
+                m_camera->Translate( { 0.0f,0.0f,time } );
+            }
+            if( Input::keys[GLFW_KEY_A] )
+            {
+                m_camera->Translate( { -time,0.0f,0.0f } );
+            }
+            if( Input::keys[GLFW_KEY_S] )
+            {
+                m_camera->Translate( { 0.0f,0.0f,-time } );
+            }
+            if( Input::keys[GLFW_KEY_D] )
+            {
+                m_camera->Translate( { time,0.0f,0.0f } );
+            }
+            if( Input::keys[GLFW_KEY_R] )
+            {
+                m_camera->Translate( { 0.0f,time,0.0f } );
+            }
+            if( Input::keys[GLFW_KEY_F] )
+            {
+                m_camera->Translate( { 0.0f,-time,0.0f } );
+            }
 
             float proj[16];
             bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f,
                         bgfx::getCaps()->homogeneousDepth);
-            bgfx::setViewTransform(kClearView, view, proj);
+            bgfx::setViewTransform(kClearView, glm::value_ptr(m_camera->GetMatrix()), proj);
 
             // Set view 0 default viewport.
             bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
