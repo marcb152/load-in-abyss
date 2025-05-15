@@ -5,14 +5,9 @@
 #include "renderer.hpp"
 
 #include <cassert>
-
-#include "box.hpp"
-#include "imported_mesh.hpp"
-
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-
 #include <memory>
 #include <vector>
 
@@ -20,6 +15,8 @@
 #include "bx/readerwriter.h"
 #include "bx/timer.h"
 #include "easy_matrix.hpp"
+#include "box.hpp"
+#include "imported_mesh.hpp"
 
 namespace Abyss::renderer
 {
@@ -47,7 +44,6 @@ namespace Abyss::renderer
             return 1;
         // Set view 0 to the same dimensions as the window and to clear the color buffer.
         bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH);
-        // bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
         // Initialize shared box resources
         Box::initShared();
@@ -129,8 +125,8 @@ namespace Abyss::renderer
             bx::mtxLookAt(view, eye, at);
 
             float proj[16];
-            bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height),
-                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+            bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f,
+                        bgfx::getCaps()->homogeneousDepth);
             bgfx::setViewTransform(kClearView, view, proj);
 
             // Set view 0 default viewport.
@@ -186,6 +182,14 @@ namespace Abyss::renderer
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();
+    }
+
+    void resize(const int width, const int height)
+    {
+        bgfx::renderFrame();
+        bgfx::reset(width, height);
+        // Set view 0 to the same dimensions as the window and to clear the color buffer.
+        bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH);
     }
 
     void reset()

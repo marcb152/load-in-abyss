@@ -23,9 +23,14 @@
 
 using namespace Abyss;
 
-static void glfw_errorCallback(int error, const char *description)
+static void glfw_errorCallback(const int error, const char *description)
 {
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
+	std::cerr << "GLFW error " << error << ": " << description << std::endl;
+}
+
+void windowSizeCallback([[maybe_unused]]GLFWwindow* window, const int width, const int height)
+{
+    renderer::resize(width, height);
 }
 
 static void quit_callback(GLFWwindow* window)
@@ -49,6 +54,7 @@ int main()
 	GLFWwindow *window = glfwCreateWindow(1024, 768, "helloworld", nullptr, nullptr);
 	if (!window)
 		return 1;
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
 
 	// Initialize bgfx using the native window handle and window resolution.
 	bgfx::Init init;

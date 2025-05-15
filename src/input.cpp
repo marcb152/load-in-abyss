@@ -10,8 +10,9 @@
 
 #include "input.hpp"
 
-#include "renderer.hpp"
 #include <unordered_map>
+
+#include "renderer.hpp"
 
 namespace Abyss::Input
 {
@@ -30,7 +31,6 @@ namespace Abyss::Input
         glfwSetCursorPosCallback(m_window, cursorPosCallback);
         glfwSetCursorEnterCallback(m_window, cursorEnterCallback);
         glfwSetScrollCallback(m_window, scrollCallback);
-        glfwSetWindowSizeCallback(m_window, windowSizeCallback);
     }
 
     // Input callbacks
@@ -61,15 +61,15 @@ namespace Abyss::Input
         keyBindings[key] = callback;
     }
 
-    void charCallback(GLFWwindow* window, unsigned int codepoint)
+    void charCallback([[maybe_unused]]GLFWwindow* window, unsigned int codepoint)
 	{
 	}
 
-	void charModsCallback(GLFWwindow* window, unsigned int codepoint, int mods)
+	void charModsCallback([[maybe_unused]]GLFWwindow* window, unsigned int codepoint, int mods)
 	{
 	}
 
-	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+	void mouseButtonCallback([[maybe_unused]]GLFWwindow* window, int button, int action, int mods)
 	{
 		if (button >= 0 && button <= GLFW_MOUSE_BUTTON_LAST)
 		{
@@ -84,25 +84,20 @@ namespace Abyss::Input
 		}
 	}
 
-	void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+	void cursorPosCallback([[maybe_unused]]GLFWwindow* window, double xpos, double ypos)
 	{
 		mouseX = xpos;
 		mouseY = ypos;
 	}
 
-	void cursorEnterCallback(GLFWwindow* window, int entered)
+	void cursorEnterCallback([[maybe_unused]]GLFWwindow* window, int entered)
 	{
 	}
 
-	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+	void scrollCallback([[maybe_unused]]GLFWwindow* window, double xoffset, double yoffset)
 	{
 		scrollX += (float)xoffset;
 		scrollY += (float)yoffset;
-	}
-
-	void windowSizeCallback(GLFWwindow* window, int width, int height)
-	{
-		// renderer::reset();
 	}
 
 	void setCursorPos(double xpos, double ypos)
