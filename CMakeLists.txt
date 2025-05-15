@@ -11,6 +11,7 @@ set(ASSIMP_BUILD_TESTS OFF)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/bgfx.cmake)
 add_subdirectory(libs/assimp)
+add_subdirectory(libs/glm)
 
 # Get all shaders in the shaders directory for each child directory
 FILE(GLOB children RELATIVE ${CMAKE_SOURCE_DIR}/res/shaders res/shaders/*)
@@ -66,6 +67,7 @@ target_link_libraries(LoadInAbyss PRIVATE
         bx
         zlibstatic
         assimp
+        glm
 )
 target_include_directories(LoadInAbyss PRIVATE
         "${PROJECT_BINARY_DIR}"
