@@ -21,8 +21,8 @@ namespace Abyss::Input
 
     void init(GLFWwindow* window);
     void setCursorVisible(bool visible);
+    bool getCursorVisible();
     void setCursorPos(double xpos, double ypos);
-    void windowSizeCallback(GLFWwindow* window, int width, int height);
     void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     void cursorEnterCallback(GLFWwindow* window, int entered);
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
@@ -31,6 +31,7 @@ namespace Abyss::Input
     void charCallback(GLFWwindow* window, unsigned int codepoint);
     void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     void bind(int key, input_callback callback);
+    void updateCursor();
 
     extern GLFWwindow* m_window;
     extern bool keys[GLFW_KEY_LAST + 1];

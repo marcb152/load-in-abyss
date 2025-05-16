@@ -53,7 +53,7 @@ private:
     glm::vec3 pos;
     float pitch;
     float yaw;
-    static constexpr float travelSpeed = 0.012f;
+    static constexpr float travelSpeed = 12.0f;
     static constexpr float rotationSpeed = 0.004f;
 
     template<typename T>

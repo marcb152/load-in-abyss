@@ -44,8 +44,8 @@ namespace Abyss
         const glm::vec4 forwardBaseVector = {0.0f,0.0f,1.0f,1.0f};
         // apply the camera rotations to a base vector
         glm::mat4 rotationMatrix = glm::identity<glm::mat4>();
-        rotationMatrix = glm::rotate(rotationMatrix,glm::radians(pitch),glm::vec3(1.0f,0.0f,0.0f));
-        rotationMatrix = glm::rotate(rotationMatrix,glm::radians(yaw),glm::vec3(0.0f,1.0f,0.0f));
+        rotationMatrix = glm::rotate(rotationMatrix, pitch,glm::vec3(1.0f,0.0f,0.0f));
+        rotationMatrix = glm::rotate(rotationMatrix, yaw,glm::vec3(0.0f,1.0f,0.0f));
         const glm::vec4 lookVector = rotationMatrix * forwardBaseVector;
         // generate camera transform (applied to all objects to arrange them relative
         // to camera position/orientation in world) from cam position and direction

@@ -62,6 +62,15 @@ namespace Abyss::Input
         keyBindings[key] = callback;
     }
 
+    void updateCursor()
+    {
+        glfwGetCursorPos(m_window, &mouseX, &mouseY);
+        mouseXDelta = mouseX - prevMouseX;
+        mouseYDelta = mouseY - prevMouseY;
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+    }
+
     void charCallback([[maybe_unused]]GLFWwindow* window, unsigned int codepoint)
 	{
 	}
@@ -87,12 +96,12 @@ namespace Abyss::Input
 
 	void cursorPosCallback([[maybe_unused]]GLFWwindow* window, double xpos, double ypos)
 	{
-		mouseX = xpos;
-		mouseY = ypos;
-        mouseXDelta = xpos - prevMouseX;
-        mouseYDelta = ypos - prevMouseY;
-        prevMouseX = xpos;
-        prevMouseY = ypos;
+		// mouseX = xpos;
+		// mouseY = ypos;
+  //       mouseXDelta = xpos - prevMouseX;
+  //       mouseYDelta = ypos - prevMouseY;
+  //       prevMouseX = xpos;
+  //       prevMouseY = ypos;
 	}
 
 	void cursorEnterCallback([[maybe_unused]]GLFWwindow* window, int entered)
@@ -111,13 +120,25 @@ namespace Abyss::Input
 	}
 
 	void setCursorVisible(bool visible)
-	{
-		glfwSetInputMode(m_window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+    {
+        glfwSetInputMode(m_window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
         // Get Raw mouse motion when cursor is hidden
         glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, visible ? GLFW_FALSE : GLFW_TRUE);
-	}
+    }
 
-    GLFWwindow* m_window;
+    bool getCursorVisible()
+    {
+        switch (glfwGetInputMode(m_window, GLFW_CURSOR))
+        {
+            case GLFW_CURSOR_NORMAL:
+                return true;
+            case GLFW_CURSOR_DISABLED:
+            default:
+                return false;
+        }
+    }
+
+    GLFWwindow * m_window;
     bool keys[GLFW_KEY_LAST + 1] = { 0 };
     bool mouseButtons[GLFW_MOUSE_BUTTON_LAST + 1] = { 0 };
     double scrollX, scrollY = 0;

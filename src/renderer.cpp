@@ -41,6 +41,7 @@ namespace Abyss::renderer
     Material simpleMaterial = {};
 
     bool cursor_enabled = true;
+    double prev_time = 0.0;
 
     void enable_cursor_callback([[maybe_unused]]GLFWwindow* window)
     {
@@ -129,45 +130,47 @@ namespace Abyss::renderer
 
     void render(const int width, const int height)
     {
-        const auto time = static_cast<float>((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
+        const auto time = (bx::getHPCounter() - m_timeOffset) / static_cast<double>(bx::getHPFrequency());
+        const auto deltaTime = time - prev_time;
 
         constexpr bx::Vec3 at = {0.0f, 0.0f, 0.0f};
         constexpr bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 
         // Set view and projection matrix for view 0.
         {
+            // TODO: We go faster in diagonal!!
             if( Input::keys[GLFW_KEY_W] )
             {
-                m_camera->Translate( { 0.0f,0.0f,time } );
+                m_camera->Translate( { 0.0f,0.0f,deltaTime } );
             }
             if( Input::keys[GLFW_KEY_A] )
             {
-                m_camera->Translate( { -time,0.0f,0.0f } );
+                m_camera->Translate( { -deltaTime,0.0f,0.0f } );
             }
             if( Input::keys[GLFW_KEY_S] )
             {
-                m_camera->Translate( { 0.0f,0.0f,-time } );
+                m_camera->Translate( { 0.0f,0.0f,-deltaTime } );
             }
             if( Input::keys[GLFW_KEY_D] )
             {
-                m_camera->Translate( { time,0.0f,0.0f } );
+                m_camera->Translate( { deltaTime,0.0f,0.0f } );
             }
             if( Input::keys[GLFW_KEY_R] )
             {
-                m_camera->Translate( { 0.0f,time,0.0f } );
+                m_camera->Translate( { 0.0f,deltaTime,0.0f } );
             }
             if( Input::keys[GLFW_KEY_F] )
             {
-                m_camera->Translate( { 0.0f,-time,0.0f } );
+                m_camera->Translate( { 0.0f,-deltaTime,0.0f } );
             }
-
+            Input::updateCursor();
             std::cout << Input::mouseXDelta << " " << Input::mouseYDelta << std::endl;
             // while( const auto delta = wnd.mouse.ReadRawDelta() )
             // {
-            //     if( !wnd.CursorEnabled() )
-            //     {
-            //         m_camera->Rotate( (float)delta->x,(float)delta->y );
-            //     }
+            if(!Input::getCursorVisible())
+            {
+                m_camera->Rotate(static_cast<float>(Input::mouseXDelta), static_cast<float>(Input::mouseYDelta));
+            }
             // }
 
             float proj[16];
@@ -228,6 +231,7 @@ namespace Abyss::renderer
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();
+        prev_time = time;
     }
 
     void resize(const int width, const int height)
