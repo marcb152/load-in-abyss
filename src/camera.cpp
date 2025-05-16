@@ -34,8 +34,11 @@
 
 #include "camera.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <algorithm>
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 namespace Abyss
 {
@@ -83,12 +86,8 @@ namespace Abyss
 
     void Camera::Translate(glm::vec3 translation) noexcept
     {
-        glm::mat4 rotationMatrix = glm::identity<glm::mat4>();
-        rotationMatrix = glm::rotate(rotationMatrix, pitch,glm::vec3(1.0f,0.0f,0.0f));
-        rotationMatrix = glm::rotate(rotationMatrix, yaw,glm::vec3(0.0f,1.0f,0.0f));
-        rotationMatrix = glm::rotate(rotationMatrix, 0.0f ,glm::vec3(0.0f,0.0f,1.0f));
-        glm::mat4 scalingMatrix = glm::identity<glm::mat4>();
-        scalingMatrix = glm::scale(scalingMatrix,glm::vec3(travelSpeed));
+        glm::mat4 rotationMatrix = glm::eulerAngleYXZ(yaw, pitch, 0.0f);
+        glm::mat4 scalingMatrix = glm::scale(glm::identity<glm::mat4>(),glm::vec3(travelSpeed));
         // Apply the rotation and scaling to the translation vector to move towards the camera's direction
         translation = glm::vec3(rotationMatrix * scalingMatrix * glm::vec4(translation,1.0f));
         pos = {
