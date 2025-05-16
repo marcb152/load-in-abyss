@@ -155,27 +155,23 @@ namespace Abyss::renderer
             {
                 m_camera->Translate( { deltaTime,0.0f,0.0f } );
             }
-            if( Input::keys[GLFW_KEY_R] )
+            if( Input::keys[GLFW_KEY_SPACE] )
             {
                 m_camera->Translate( { 0.0f,deltaTime,0.0f } );
             }
-            if( Input::keys[GLFW_KEY_F] )
+            if( Input::keys[GLFW_KEY_LEFT_SHIFT] )
             {
                 m_camera->Translate( { 0.0f,-deltaTime,0.0f } );
             }
             Input::updateCursor();
-            std::cout << Input::mouseXDelta << " " << Input::mouseYDelta << std::endl;
-            // while( const auto delta = wnd.mouse.ReadRawDelta() )
-            // {
             if(!Input::getCursorVisible())
             {
                 m_camera->Rotate(static_cast<float>(Input::mouseXDelta), static_cast<float>(Input::mouseYDelta));
             }
-            // }
 
             float proj[16];
             bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f,
-                        bgfx::getCaps()->homogeneousDepth);
+                        bgfx::getCaps()->homogeneousDepth, bx::Handedness::Left);
             bgfx::setViewTransform(kClearView, glm::value_ptr(m_camera->GetMatrix()), proj);
 
             // Set view 0 default viewport.

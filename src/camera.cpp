@@ -41,23 +41,23 @@ namespace Abyss
 
     glm::mat4 Camera::GetMatrix() const noexcept
     {
-        const glm::vec4 forwardBaseVector = {0.0f,0.0f,1.0f,1.0f};
+        const glm::vec3 forwardBaseVector = {0.0f,0.0f,1.0f};
         // apply the camera rotations to a base vector
         glm::mat4 rotationMatrix = glm::identity<glm::mat4>();
         rotationMatrix = glm::rotate(rotationMatrix, pitch,glm::vec3(1.0f,0.0f,0.0f));
         rotationMatrix = glm::rotate(rotationMatrix, yaw,glm::vec3(0.0f,1.0f,0.0f));
-        const glm::vec4 lookVector = rotationMatrix * forwardBaseVector;
+        rotationMatrix = glm::rotate(rotationMatrix, 0.0f ,glm::vec3(0.0f,0.0f,1.0f));
+        const glm::vec3 lookVector = glm::vec3(rotationMatrix * glm::vec4(forwardBaseVector, 1.0f));
         // generate camera transform (applied to all objects to arrange them relative
         // to camera position/orientation in world) from cam position and direction
         // camera "top" always faces towards +Y (cannot do a barrel roll)
-        const glm::vec3 camPosition = glm::vec3(pos);
-        const glm::vec3 camTarget = camPosition + glm::vec3(lookVector);
-        return glm::lookAtLH(camPosition, camTarget, glm::vec3(0.0f, 1.0f, 0.0f));
+        const glm::vec3 camTarget = pos + lookVector;
+        return glm::lookAtLH(pos, camTarget, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     void Camera::Reset() noexcept
     {
-        pos = glm::vec3(0.0f,7.5f,-18.0f);
+        pos = glm::vec3(0.0f,0.0f,-35.0f);
         pitch = 0.0f;
         yaw = 0.0f;
     }
@@ -73,6 +73,7 @@ namespace Abyss
         glm::mat4 rotationMatrix = glm::identity<glm::mat4>();
         rotationMatrix = glm::rotate(rotationMatrix,glm::radians(pitch),glm::vec3(1.0f,0.0f,0.0f));
         rotationMatrix = glm::rotate(rotationMatrix,glm::radians(yaw),glm::vec3(0.0f,1.0f,0.0f));
+        rotationMatrix = glm::rotate(rotationMatrix, 0.0f ,glm::vec3(0.0f,0.0f,1.0f));
         glm::mat4 scalingMatrix = glm::identity<glm::mat4>();
         scalingMatrix = glm::scale(scalingMatrix,glm::vec3(travelSpeed));
         // TODO: Warning matrix order!!
