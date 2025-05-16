@@ -43,10 +43,8 @@ This project uses code from the following third-party sources. The use of this c
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 ```
-- **Usage Notice:** Portions of the minecraft-again code may have been incorporated into this project.
-- [TEMPORARY, no code copy-pasted yet, but inspiration was taken from it. Choose ONE of the following statements and delete the other:]
-  * No modifications were made to the original minecraft-again code used.
-  * Modifications were made to the original minecraft-again code used in this project.
+- **Usage Notice:** Portions of the Minecraft-again code have been incorporated into this project and can be found within these files:
+  - `src/camera.cpp`: Added jdah's View Matrix generation code into this class.
 
 ---
 
