@@ -18,27 +18,29 @@
 #endif
 #include <GLFW/glfw3native.h>
 
+#include "input.hpp"
 #include "renderer.hpp"
 
 using namespace Abyss;
 
-static bool s_showStats = false;
-
-static void glfw_errorCallback(int error, const char *description)
+static void glfw_errorCallback(const int error, const char *description)
 {
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
+	std::cerr << "GLFW error " << error << ": " << description << std::endl;
 }
 
-static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+void windowSizeCallback([[maybe_unused]]GLFWwindow* window, int width, int height)
 {
-	if (key == GLFW_KEY_F1 && action == GLFW_RELEASE)
-		s_showStats = !s_showStats;
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-	{
-		//Quit window
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
+    // Setting 1 as the minimum size because BGFX requires a minimum size of 1x1
+    width = std::max(1, width);
+    height = std::max(1, height);
+    renderer::resize(width, height);
 }
+
+static void quit_callback(GLFWwindow* window)
+{
+	glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main()
@@ -55,7 +57,7 @@ int main()
 	GLFWwindow *window = glfwCreateWindow(1024, 768, "helloworld", nullptr, nullptr);
 	if (!window)
 		return 1;
-	glfwSetKeyCallback(window, glfw_keyCallback);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
 
 	// Initialize bgfx using the native window handle and window resolution.
 	bgfx::Init init;
@@ -64,11 +66,13 @@ int main()
 	{
 		init.platformData.ndt = glfwGetWaylandDisplay();
 		init.platformData.nwh = (void*)(uintptr_t)glfwGetWaylandWindow(window);
+        init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
 	}
 	else if (glfwGetPlatform() == GLFW_PLATFORM_X11)
 	{
 		init.platformData.ndt = glfwGetX11Display();
 		init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
+        init.platformData.type = bgfx::NativeWindowHandleType::Default;
 	}
 #elif BX_PLATFORM_OSX
 	init.platformData.nwh = glfwGetCocoaWindow(window);
@@ -80,17 +84,14 @@ int main()
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
-	if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
-    {
-        init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
-    }
-    else if (glfwGetPlatform() == GLFW_PLATFORM_X11)
-    {
-        init.platformData.type = bgfx::NativeWindowHandleType::Default;
-    }
+#ifndef NDEBUG
+    // BGFX Debug
     init.debug = true;
+#endif
 
     renderer::init(init);
+    Input::init(window);
+    Input::bind(GLFW_KEY_ESCAPE, quit_callback);
 
     // Main loop
 	while (!glfwWindowShouldClose(window)) {

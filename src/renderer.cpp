@@ -5,21 +5,21 @@
 #include "renderer.hpp"
 
 #include <cassert>
-
-#include "box.hpp"
-#include "imported_mesh.hpp"
-
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-
 #include <memory>
 #include <vector>
 
 #include "bgfx/platform.h"
+#include "box.hpp"
 #include "bx/readerwriter.h"
 #include "bx/timer.h"
+#include "camera.hpp"
 #include "easy_matrix.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "imported_mesh.hpp"
+#include "input.hpp"
 
 namespace Abyss::renderer
 {
@@ -34,8 +34,20 @@ namespace Abyss::renderer
     // Suzanne model
     std::shared_ptr<ImportedMesh> m_suzanne;
 
+    // Camera
+    std::unique_ptr<Camera> m_camera = std::make_unique<Camera>();
+
     Material material = {};
     Material simpleMaterial = {};
+
+    bool cursor_enabled = true;
+    double prev_time = 0.0;
+
+    void enable_cursor_callback([[maybe_unused]]GLFWwindow* window)
+    {
+        cursor_enabled = !cursor_enabled;
+        Input::setCursorVisible(cursor_enabled);
+    }
 
     int init(bgfx::Init init)
     {
@@ -47,7 +59,6 @@ namespace Abyss::renderer
             return 1;
         // Set view 0 to the same dimensions as the window and to clear the color buffer.
         bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH);
-        // bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
         // Initialize shared box resources
         Box::initShared();
@@ -112,33 +123,54 @@ namespace Abyss::renderer
             }
         }
 
+        Input::bind(GLFW_KEY_LEFT_CONTROL, enable_cursor_callback);
         m_timeOffset = bx::getHPCounter();
+        prev_time = (bx::getHPCounter() - m_timeOffset) / static_cast<double>(bx::getHPFrequency());
         return 0;
     }
 
     void render(const int width, const int height)
     {
-        const auto time = static_cast<float>((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
+        const auto time = (bx::getHPCounter() - m_timeOffset) / static_cast<double>(bx::getHPFrequency());
+        const auto deltaTime = time - prev_time;
 
-        constexpr bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-        constexpr bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
-
+        // TODO: Move this scope into the future Player class, not relevant here
         // Set view and projection matrix for view 0.
         {
-            float view[16];
-            bx::mtxLookAt(view, eye, at);
+            glm::vec3 translation = glm::vec3(0.0f);
+            if(Input::keys[GLFW_KEY_W])
+                translation.z += 1.0f;
+            if(Input::keys[GLFW_KEY_A])
+                translation.x -= 1.0f;
+            if(Input::keys[GLFW_KEY_S])
+                translation.z -= 1.0f;
+            if(Input::keys[GLFW_KEY_D])
+                translation.x += 1.0f;
+            if(Input::keys[GLFW_KEY_SPACE])
+                translation.y += 1.0f;
+            if(Input::keys[GLFW_KEY_LEFT_SHIFT])
+                translation.y -= 1.0f;
+
+            if (glm::length(translation) > 0.1f)
+            {
+                m_camera->Translate(glm::normalize(translation) * static_cast<float>(deltaTime));
+            }
+
+            Input::updateCursor();
+            if(!Input::getCursorVisible())
+            {
+                m_camera->Rotate(static_cast<float>(Input::mouseXDelta), static_cast<float>(Input::mouseYDelta));
+            }
 
             float proj[16];
-            bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height),
-                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-            bgfx::setViewTransform(kClearView, view, proj);
+            bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f,
+                        bgfx::getCaps()->homogeneousDepth, bx::Handedness::Left);
+            bgfx::setViewTransform(kClearView, glm::value_ptr(m_camera->GetMatrix()), proj);
 
             // Set view 0 default viewport.
             bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
         }
 
-        // This dummy draw call is here to make sure that view 0 is cleared
-        // if no other draw calls are submitted to view 0.
         // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view
         // 0.
         bgfx::touch(kClearView);
@@ -186,6 +218,16 @@ namespace Abyss::renderer
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();
+        prev_time = time;
+    }
+
+    void resize(const int width, const int height)
+    {
+        assert(width > 0 && height > 0 && "Invalid zeroed width or height");
+        bgfx::renderFrame();
+        bgfx::reset(width, height);
+        // Set view 0 to the same dimensions as the window and to clear the color buffer.
+        bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH);
     }
 
     void reset()
@@ -209,20 +251,35 @@ namespace Abyss::renderer
     {
         const char* shaderPath = "???";
 
-        switch(bgfx::getRendererType()) {
+        switch (bgfx::getRendererType())
+        {
             case bgfx::RendererType::Noop:
             case bgfx::RendererType::Direct3D11:
-            case bgfx::RendererType::Direct3D12: shaderPath = "shaders/dx11/";  break;
-            case bgfx::RendererType::Gnm:        shaderPath = "shaders/pssl/";  break;
-            case bgfx::RendererType::Metal:      shaderPath = "shaders/metal/"; break;
-            case bgfx::RendererType::OpenGL:     shaderPath = "shaders/glsl/";  break;
-            case bgfx::RendererType::OpenGLES:   shaderPath = "shaders/essl/";  break;
-            case bgfx::RendererType::Vulkan:     shaderPath = "shaders/spirv/"; break;
-            default:                             shaderPath = ""; break;
+            case bgfx::RendererType::Direct3D12:
+                shaderPath = "shaders/dx11/";
+                break;
+            case bgfx::RendererType::Gnm:
+                shaderPath = "shaders/pssl/";
+                break;
+            case bgfx::RendererType::Metal:
+                shaderPath = "shaders/metal/";
+                break;
+            case bgfx::RendererType::OpenGL:
+                shaderPath = "shaders/glsl/";
+                break;
+            case bgfx::RendererType::OpenGLES:
+                shaderPath = "shaders/essl/";
+                break;
+            case bgfx::RendererType::Vulkan:
+                shaderPath = "shaders/spirv/";
+                break;
+            default:
+                shaderPath = "";
+                break;
         }
 
-        size_t shaderLen = strlen(shaderPath);
-        size_t fileLen = strlen(FILENAME);
+        const size_t shaderLen = strlen(shaderPath);
+        const size_t fileLen = strlen(FILENAME);
         // +1 for '\0'
         char* filePath = static_cast<char*>(malloc(shaderLen + fileLen + 1));
         strcpy(filePath, shaderPath);

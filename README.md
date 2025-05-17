@@ -28,11 +28,10 @@ C++23
 ## Authors
 
 - [@marcb152](https://www.github.com/marcb152)
-- [@Okinobi]
+- [@Okinobi](https://github.com/martina13-stu)
 - [@Pyy0tr](https://github.com/Pyy0tr)
 - [@TomSilfCreative](https://github.com/TomSilfCreative)
-- [@AMO]
-- [@Matthieu]
+- [@Amaury](https://github.com/AmauGou)
 - [@EGIDE]
 - [@Boo!!]
 - [@LeGauth44](https://github.com/LeGauth44)
