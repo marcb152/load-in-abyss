@@ -46,7 +46,7 @@ public:
     Camera &operator=(Camera &&other) = default;
 
     glm::mat4 GetMatrix() const noexcept;
-    void Reset() noexcept;
+    void Reset(const glm::vec3& initialPos = glm::vec3(0.0f, 0.0f, -35.0f)) noexcept;
     void Rotate(float dx,float dy) noexcept;
     void Translate(glm::vec3 translation) noexcept;
 private:
@@ -55,9 +55,6 @@ private:
     float yaw;
     static constexpr float travelSpeed = 12.0f;
     static constexpr float rotationSpeed = 0.004f;
-
-    template<typename T>
-    T wrap_angle(T theta);
 };
 
 } // Abyss

@@ -28,8 +28,11 @@ static void glfw_errorCallback(const int error, const char *description)
 	std::cerr << "GLFW error " << error << ": " << description << std::endl;
 }
 
-void windowSizeCallback([[maybe_unused]]GLFWwindow* window, const int width, const int height)
+void windowSizeCallback([[maybe_unused]]GLFWwindow* window, int width, int height)
 {
+    // Setting 1 as the minimum size because BGFX requires a minimum size of 1x1
+    width = std::max(1, width);
+    height = std::max(1, height);
     renderer::resize(width, height);
 }
 
@@ -81,8 +84,10 @@ int main()
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
+#ifndef NDEBUG
     // BGFX Debug
     init.debug = true;
+#endif
 
     renderer::init(init);
     Input::init(window);

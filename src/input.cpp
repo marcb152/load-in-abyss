@@ -12,13 +12,11 @@
 
 #include <unordered_map>
 
-#include "renderer.hpp"
-
 namespace Abyss::Input
 {
     // Map to store key-callback pairs
     static std::unordered_map<int, input_callback> keyBindings;
-    static double prevMouseX, prevMouseY;
+    static double prevMouseX = 0.0, prevMouseY = 0.0;
     
     void init(GLFWwindow* window)
     {
@@ -26,11 +24,7 @@ namespace Abyss::Input
 
         // Setup input callbacks
         glfwSetKeyCallback(m_window, keyCallback);
-        glfwSetCharCallback(m_window, charCallback);
-        glfwSetCharModsCallback(m_window, charModsCallback);
         glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
-        glfwSetCursorPosCallback(m_window, cursorPosCallback);
-        glfwSetCursorEnterCallback(m_window, cursorEnterCallback);
         glfwSetScrollCallback(m_window, scrollCallback);
     }
 
@@ -39,7 +33,7 @@ namespace Abyss::Input
     {
         if (key != GLFW_KEY_UNKNOWN)
         {
-            if (action == GLFW_PRESS)
+            if (action == GLFW_PRESS || action == GLFW_REPEAT)
             {
                 keys[key] = true;
             }
@@ -55,29 +49,6 @@ namespace Abyss::Input
             }
         }
     }
-    
-    void bind(int key, input_callback callback)
-    {
-        // TODO: That's bad code, refactor it with std::move (aka perfect forwarding)
-        keyBindings[key] = callback;
-    }
-
-    void updateCursor()
-    {
-        glfwGetCursorPos(m_window, &mouseX, &mouseY);
-        mouseXDelta = mouseX - prevMouseX;
-        mouseYDelta = mouseY - prevMouseY;
-        prevMouseX = mouseX;
-        prevMouseY = mouseY;
-    }
-
-    void charCallback([[maybe_unused]]GLFWwindow* window, unsigned int codepoint)
-	{
-	}
-
-	void charModsCallback([[maybe_unused]]GLFWwindow* window, unsigned int codepoint, int mods)
-	{
-	}
 
 	void mouseButtonCallback([[maybe_unused]]GLFWwindow* window, int button, int action, int mods)
 	{
@@ -94,30 +65,40 @@ namespace Abyss::Input
 		}
 	}
 
-	void cursorPosCallback([[maybe_unused]]GLFWwindow* window, double xpos, double ypos)
-	{
-		// mouseX = xpos;
-		// mouseY = ypos;
-  //       mouseXDelta = xpos - prevMouseX;
-  //       mouseYDelta = ypos - prevMouseY;
-  //       prevMouseX = xpos;
-  //       prevMouseY = ypos;
-	}
-
-	void cursorEnterCallback([[maybe_unused]]GLFWwindow* window, int entered)
-	{
-	}
-
 	void scrollCallback([[maybe_unused]]GLFWwindow* window, double xoffset, double yoffset)
 	{
-		scrollX += (float)xoffset;
-		scrollY += (float)yoffset;
+		scrollX += static_cast<float>(xoffset);
+		scrollY += static_cast<float>(yoffset);
 	}
 
-	void setCursorPos(double xpos, double ypos)
-	{
-		glfwSetCursorPos(m_window, xpos, ypos);
-	}
+    void bind(const int key, input_callback callback)
+    {
+        // Check if the key is valid
+        if (key < 0 || key > GLFW_KEY_LAST)
+            return;
+        // TODO: That's bad code, refactor it with std::move (aka perfect forwarding)
+        keyBindings[key] = std::move(callback);
+    }
+
+    void unbind(const int key)
+    {
+        // Check if the key is valid
+        if (key < 0 || key > GLFW_KEY_LAST)
+            return;
+        if (const auto it = keyBindings.find(key); it != keyBindings.end())
+        {
+            keyBindings.erase(it);
+        }
+    }
+
+    void updateCursor()
+    {
+        glfwGetCursorPos(m_window, &mouseX, &mouseY);
+        mouseXDelta = mouseX - prevMouseX;
+        mouseYDelta = mouseY - prevMouseY;
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+    }
 
 	void setCursorVisible(bool visible)
     {
@@ -139,9 +120,9 @@ namespace Abyss::Input
     }
 
     GLFWwindow * m_window;
-    bool keys[GLFW_KEY_LAST + 1] = { 0 };
-    bool mouseButtons[GLFW_MOUSE_BUTTON_LAST + 1] = { 0 };
-    double scrollX, scrollY = 0;
-    double mouseX, mouseY = 0;
-    double mouseXDelta, mouseYDelta = 0;
+    bool keys[GLFW_KEY_LAST + 1] = {0};
+    bool mouseButtons[GLFW_MOUSE_BUTTON_LAST + 1] = {0};
+    double scrollX = 0, scrollY = 0;
+    double mouseX = 0, mouseY = 0;
+    double mouseXDelta = 0, mouseYDelta = 0;
 } // Abyss

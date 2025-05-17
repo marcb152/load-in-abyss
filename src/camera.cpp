@@ -65,9 +65,9 @@ namespace Abyss
         return view;
     }
 
-    void Camera::Reset() noexcept
+    void Camera::Reset(const glm::vec3& initialPos) noexcept
     {
-        pos = glm::vec3(0.0f,0.0f,-35.0f);
+        pos = initialPos;
         pitch = 0.0f;
         yaw = 0.0f;
     }
