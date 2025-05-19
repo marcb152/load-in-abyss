@@ -28,7 +28,7 @@ namespace Abyss::renderer
     // Scene management
     std::vector<std::shared_ptr<Box>> m_boxes;
 
-    static bgfx::ShaderHandle loadShader(const char *FILENAME);
+    static bgfx::ShaderHandle loadShader(const std::string& FILENAME);
     const bgfx::ViewId kClearView = 0;
 
     // Suzanne model
@@ -247,9 +247,9 @@ namespace Abyss::renderer
         bgfx::shutdown();
     }
 
-    static bgfx::ShaderHandle loadShader(const char *FILENAME)
+    static bgfx::ShaderHandle loadShader(const std::string& FILENAME)
     {
-        const char* shaderPath = "???";
+        std::string shaderPath = "???";
 
         switch (bgfx::getRendererType())
         {
@@ -278,29 +278,22 @@ namespace Abyss::renderer
                 break;
         }
 
-        const size_t shaderLen = strlen(shaderPath);
-        const size_t fileLen = strlen(FILENAME);
-        // +1 for '\0'
-        char* filePath = static_cast<char*>(malloc(shaderLen + fileLen + 1));
-        strcpy(filePath, shaderPath);
-        strcat(filePath, FILENAME);
+        const std::string filePath = shaderPath + FILENAME;
 
-        FILE *file = fopen(filePath, "rb");
+        FILE *file = std::fopen(filePath.c_str(), "rb");
         if (file == nullptr)
         {
             std::cerr << "Could not open shader file: " << filePath << std::endl;
-            free(filePath);
             return BGFX_INVALID_HANDLE;
         }
         fseek(file, 0, SEEK_END);
-        long fileSize = ftell(file);
+        const long fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);
 
         const bgfx::Memory *mem = bgfx::alloc(fileSize + 1);
         fread(mem->data, 1, fileSize, file);
         mem->data[mem->size - 1] = '\0';
         fclose(file);
-        free(filePath);
 
         return bgfx::createShader(mem);
     }
