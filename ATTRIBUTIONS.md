@@ -79,6 +79,8 @@ SOFTWARE.
 - **Usage Notice:** Portions of the Chili Direct3D Engine code have been incorporated into this project and can be found within these files:
   - `src/camera.hpp`: Removed Direct3D specific code, replaced it with GLM's and edited the namespace.
   - `src/camera.cpp`: Removed Direct3D specific code, replaced it with GLM's and edited the namespace.
+  - `src/model.hpp`: Removed Direct3D specific code, replaced it with GLM's and edited the namespace.
+  - `src/model.cpp`: Removed Direct3D specific code, replaced it with GLM's and edited the namespace.
 
 ---
 
