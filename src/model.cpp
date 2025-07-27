@@ -29,9 +29,12 @@
 
 #include "model.hpp"
 
+#include <iostream>
+
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "imported_mesh.hpp"
 
 namespace Abyss
 {
@@ -108,18 +111,18 @@ namespace Abyss
         // Extract indices and convert to the appropriate format
         std::vector<uint16_t> indices;
         // Enforce a maximum of 65,535 vertices for 16‑bit indices
-        if (mesh->mNumVertices > std::numeric_limits<uint16_t>::max())
+        if (mesh.mNumVertices > std::numeric_limits<uint16_t>::max())
         {
-            std::cerr << "Mesh too large for 16‑bit indices (" << mesh->mNumVertices
+            std::cerr << "Mesh too large for 16‑bit indices (" << mesh.mNumVertices
                       << " vertices). Use 32‑bit indices or split the mesh."
                       << std::endl;
-            return false;
+            return nullptr;
         }
-        indices.reserve(mesh->mNumFaces * 3);
+        indices.reserve(mesh.mNumFaces * 3);
 
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        for (unsigned int i = 0; i < mesh.mNumFaces; i++)
         {
-            const aiFace& face = mesh->mFaces[i];
+            const aiFace& face = mesh.mFaces[i];
             assert(face.mNumIndices == 3 && "Face must be triangulated");
 
             indices.push_back(static_cast<uint16_t>(face.mIndices[0]));
@@ -131,7 +134,7 @@ namespace Abyss
         const bgfx::Memory* ibMem = bgfx::copy(indices.data(), indices.size() * sizeof(uint16_t));
         m_ibh = bgfx::createIndexBuffer(ibMem);
 
-	    return std::make_unique<Mesh>();
+	    return std::make_unique<ImportedMesh>("TODO");
     }
     std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
     {
